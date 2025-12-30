@@ -1,25 +1,26 @@
-import { platform } from '@tauri-apps/plugin-os';
 import { invoke } from '@tauri-apps/api/core';
+import { platform } from '@tauri-apps/plugin-os';
 
 import { Item, ItemActions, ItemContent, ItemDescription, ItemHeader, ItemTitle } from "@/components/ui/item";
+import { NumberInput } from '@/components/ui/number-input';
+import { ShortcutRecorder } from '@/components/ui/shortcut-recorder';
 import { Switch } from "@/components/ui/switch";
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from "@/lib/utils";
-import { useKeyEvent } from "@/stores/key_event";
-import { ArrowHorizontalIcon, ArrowUp01Icon, ArrowUpBigIcon, ArrowVerticalIcon, CommandIcon, Diamond01Icon, FilterHorizontalIcon, LayerBringForwardIcon, LayerIcon, OptionIcon, TextAlignLeft01Icon, ToggleOnIcon, WindowsOldIcon } from "@hugeicons/core-free-icons";
+import { useKeyEventSync as useKeyEvent } from "@/stores/key_event";
+import { useKeyStyleSync as useKeyStyle } from "@/stores/key_style";
+import { ArrowHorizontalIcon, ArrowUp01Icon, ArrowUpBigIcon, ArrowVerticalIcon, CommandIcon, Diamond01Icon, FilterHorizontalIcon, LayerIcon, OptionIcon, ToggleOnIcon, WindowsOldIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
-import { NumberInput } from '../ui/number-input';
-import { ToggleGroup, ToggleGroupItem } from '../ui/toggle-group';
-import { ShortcutRecorder } from '../ui/shortcut-recorder';
-import { useState } from 'react';
+
 
 const platformName = platform();
 const modifiers = [
     { icon: ArrowUp01Icon, label: 'Ctrl', value: 'Ctrl' },
     platformName === 'macos'
-    ? { icon: CommandIcon, label: 'Cmd', value: 'Meta' }
-    : platformName === 'windows'
-    ? { icon: WindowsOldIcon, label: 'Win', value: 'Meta' }
-    : { icon: Diamond01Icon, label: 'Meta', value: 'Meta' },
+        ? { icon: CommandIcon, label: 'Cmd', value: 'Meta' }
+        : platformName === 'windows'
+            ? { icon: WindowsOldIcon, label: 'Win', value: 'Meta' }
+            : { icon: Diamond01Icon, label: 'Meta', value: 'Meta' },
     { icon: OptionIcon, label: platformName === 'macos' ? 'Opt' : 'Alt', value: 'Alt' },
     { icon: ArrowUpBigIcon, label: 'Shift', value: 'Shift' },
     { label: 'F#', value: 'Fn' },
@@ -31,11 +32,13 @@ export const GeneralSettings = () => {
         ignoreModifiers, setIgnoreModifiers,
         showEventHistory, setShowEventHistory,
         maxHistory, setMaxHistory,
+        toggleShortcut, setToggleShortcut
     } = useKeyEvent();
 
-    const [toggleShortcut, setToggleShortcut] = useState<string[]>(["Shift", "F10"]);
+    const direction = useKeyStyle(state => state.appearance.flexDirection);
+    const setAppearance = useKeyStyle(state => state.setAppearance);
 
-    return <div className="flex flex-col gap-y-4 p-6 pb-10">
+    return <div className="flex flex-col gap-y-4 p-6">
         <h1 className="text-xl font-semibold">General</h1>
 
         <Item variant="muted">
@@ -70,14 +73,12 @@ export const GeneralSettings = () => {
                             key={mod.label}
                             icon={mod.icon}
                             label={mod.label}
-                            disabled={ignoreModifiers.has(mod.value)}
+                            disabled={ignoreModifiers.includes(mod.value)}
                             onClick={() => {
-                                if (ignoreModifiers.has(mod.value)) {
-                                    const set = new Set(ignoreModifiers);
-                                    set.delete(mod.value);
-                                    setIgnoreModifiers(set);
+                                if (ignoreModifiers.includes(mod.value)) {
+                                    setIgnoreModifiers(ignoreModifiers.filter(m => m !== mod.value));
                                 } else {
-                                    setIgnoreModifiers(new Set([...ignoreModifiers, mod.value]));
+                                    setIgnoreModifiers([...ignoreModifiers, mod.value]);
                                 }
                             }}
                         />
@@ -104,22 +105,20 @@ export const GeneralSettings = () => {
         <div className={cn("flex flex-col gap-4 md:flex-row", showEventHistory ? "" : "pointer-events-none opacity-50", "transition-opacity")}>
             <Item variant="muted" className="flex-7">
                 <ItemContent>
-                    <ItemTitle>
-                        {/* <HugeiconsIcon icon={LayerBringForwardIcon} size="1.1em" /> */}
-                        Direction
-                    </ItemTitle>
+                    <ItemTitle>Direction</ItemTitle>
                 </ItemContent>
                 <ItemActions>
                     <ToggleGroup
-                        type="single"
-                        defaultValue="horizontal"
-                        variant="outline"
                         size="sm"
+                        type="single"
+                        variant="outline"
+                        value={direction}
+                        onValueChange={(value) => setAppearance({ flexDirection: value as 'row' | 'column' })}
                     >
-                        <ToggleGroupItem value="horizontal" aria-label="Horizontal">
+                        <ToggleGroupItem value="row" aria-label="Horizontal">
                             <HugeiconsIcon icon={ArrowHorizontalIcon} strokeWidth={2} size={10} /> Row
                         </ToggleGroupItem>
-                        <ToggleGroupItem value="vertical" aria-label="Vertical">
+                        <ToggleGroupItem value="column" aria-label="Vertical">
                             <HugeiconsIcon icon={ArrowVerticalIcon} strokeWidth={2} /> Column
                         </ToggleGroupItem>
                     </ToggleGroup>
@@ -127,10 +126,7 @@ export const GeneralSettings = () => {
             </Item>
             <Item variant="muted" className="flex-5">
                 <ItemContent>
-                    <ItemTitle>
-                        {/* <HugeiconsIcon icon={TextAlignLeft01Icon} size="1.1em" /> */}
-                        Max Count
-                    </ItemTitle>
+                    <ItemTitle>Max Count</ItemTitle>
                 </ItemContent>
                 <ItemActions className="max-w-20">
                     <NumberInput className="h-8" value={maxHistory} onChange={setMaxHistory} minValue={2} maxValue={12} />

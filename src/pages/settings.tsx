@@ -1,9 +1,13 @@
-import { AppearanceSettings, GeneralSettings, KeycapSettings } from "@/components/settings";
+import { emitTo } from "@tauri-apps/api/event";
+
+import { AboutPage, AppearanceSettings, GeneralSettings, KeycapSettings, MouseSettings } from "@/components/settings";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { SidebarItem } from "@/components/ui/sidebar-item";
+import { useKeyStyle } from "@/stores/key_style";
 import { ComputerIcon, InformationSquareIcon, KeyboardIcon, Mouse09Icon, Settings03Icon } from "@hugeicons/core-free-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 
 
 const sideBar = [
@@ -28,29 +32,40 @@ const Settings = () => {
                 </div>
                 {
                     sideBar.map((item) => (
-                        <a href="#" key={item.title} onClick={() => setActiveTab(item.title)}>
+                        <a key={item.title} onClick={() => setActiveTab(item.title)} className="cursor-pointer">
                             <SidebarItem item={item} isActive={activeTab === item.title} />
                         </a>
                     ))
                 }
-                <a href="#" key="about" onClick={() => setActiveTab("About")} className="mt-auto">
+                <a key="about" onClick={() => setActiveTab("About")} className="mt-auto cursor-pointer">
                     <SidebarItem item={{ title: "About", icon: InformationSquareIcon }} isActive={activeTab === "About"} />
                 </a>
             </div>
             <Separator orientation="vertical" />
             <ScrollArea className="flex-1 relative">
-                {
-                    activeTab === "General" && <GeneralSettings />
-                }
-                {
-                    activeTab === "Appearance" && <AppearanceSettings />
-                }
-                {
-                    activeTab === "Keycap" && <KeycapSettings />
-                }
+                {activeTab === "General" && <GeneralSettings />}
+                {activeTab === "Appearance" && <AppearanceSettings />}
+                {activeTab === "Keycap" && <KeycapSettings />}
+                {activeTab === "Mouse" && <MouseSettings />}
+                {activeTab === "About" && <AboutPage />}
             </ScrollArea>
+            <SendUpdate />
         </div>
     );
+}
+
+function SendUpdate() {
+    const keyEvent = useKeyStyle();
+
+    useEffect(() => {
+        emitTo(
+            "main",
+            "store-event",
+            { isActive: true },
+        )
+    }, [keyEvent])
+
+    return null;
 }
 
 export default Settings;

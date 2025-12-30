@@ -11,18 +11,38 @@ use tauri::{
 mod app;
 use app::commands::{log, set_toggle_shortcut};
 use app::event::start_listener;
-use app::state::AppState;
+use app::state::{AppState, KeyEventStore};
+use tauri_plugin_store::StoreExt;
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let app_handle = app.handle();
 
+            let mut app_state = AppState::new();
+
+            // load toggleShortcut from store if it exists
+            let store = app.store("store.json")?;
+            if let Some(value) = store.get("key_event_store") {
+                // the value comes in as a String: "{\"state\": ...}"
+                if let Some(json_str) = value.as_str() {
+                    // parse the inner string
+                    match serde_json::from_str::<KeyEventStore>(json_str) {
+                        Ok(parsed) => {
+                            app_state.toggle_shortcut = parsed.state.toggle_shortcut;
+                        }
+                        Err(e) => eprintln!("Failed to parse inner config JSON: {}", e),
+                    }
+                }
+            }
+
             // manage app state
-            app.manage(Mutex::new(AppState::new()));
+            app.manage(Mutex::new(app_state));
 
             // tray actions
             let toggle_item = MenuItem::with_id(app, "toggle", "Stop", true, None::<&str>)?;
@@ -30,8 +50,7 @@ pub fn run() {
             let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
 
             // start global input listener
-            // !DEBUG: Disabled for settings ui development
-            // start_listener(app_handle.clone(), toggle_item.clone());
+            start_listener(app_handle.clone(), toggle_item.clone());
 
             // setup tray menu
             let tray_icon = Image::from(include_image!("icons/tray.png"));
@@ -69,6 +88,10 @@ pub fn run() {
                         let webview_url = tauri::WebviewUrl::App("index.html#/settings".into());
                         WebviewWindowBuilder::new(app, "settings", webview_url.clone())
                             .title("Settings")
+                            .inner_size(800.0, 640.0)
+                            .min_inner_size(560.0, 480.0)
+                            .max_inner_size(1000.0, 800.0)
+                            .maximizable(false)
                             .build()
                             .unwrap();
                     }

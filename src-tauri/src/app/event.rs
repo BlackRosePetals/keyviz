@@ -232,7 +232,8 @@ pub fn start_listener(app_handle: AppHandle, toggle_menu_item: MenuItem<Wry>) {
                         // emit key releases for all pressed keys
                         for key_name in &app_state.pressed_keys {
                             app_handle
-                                .emit(
+                                .emit_to(
+                                    "main",
                                     "input-event",
                                     InputEvent::KeyEvent {
                                         pressed: false,

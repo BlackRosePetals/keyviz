@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
 // Enable CSS color names (e.g., "red")
 extend([namesPlugin]);
@@ -473,3 +474,31 @@ export const ColorPickerFormat = ({ className, ...props }: HTMLAttributes<HTMLDi
 
   return null;
 };
+
+// --- Color Input ---
+export const ColorInput = ({ value: colorHex, onChange, disabled, className }: { value: string; onChange: (color: string) => void; disabled?: boolean; className?: string }) => {
+  return <Popover>
+    <PopoverTrigger asChild>
+      <Button variant="outline" className={cn("min-w-30 justify-start text-left font-normal pl-1", className)} disabled={disabled}>
+        <div className="h-4/5 aspect-square rounded-md mr-1" style={{ background: colorHex }} />
+        <span className="font-mono">{colorHex}</span>
+      </Button>
+    </PopoverTrigger>
+    <PopoverContent align="start" className="w-72 h-72">
+      <ColorPicker value={colorHex} onChange={c => onChange(c.toString())} className="w-64 h-64">
+        <ColorPickerSelection />
+        <div className="flex items-center gap-4">
+          <ColorPickerEyeDropper />
+          <div className="grid w-full gap-1">
+            <ColorPickerHue />
+            <ColorPickerAlpha />
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <ColorPickerOutput />
+          <ColorPickerFormat />
+        </div>
+      </ColorPicker>
+    </PopoverContent>
+  </Popover>;
+}

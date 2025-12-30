@@ -25,3 +25,4 @@ serde_json = "1"
 
 rdev = { path = "crates/rdev" }
 tauri-plugin-os = "2"
+tauri-plugin-store = "2"

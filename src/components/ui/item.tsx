@@ -6,6 +6,22 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
 
+
+function ItemGrid({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      role="list"
+      data-slot="item-group"
+      className={cn(
+        "gap-4 has-[[data-size=sm]]:gap-2.5 has-[[data-size=xs]]:gap-2 group/item-group grid grid-cols-1 w-full md:grid-cols-2",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+
 function ItemGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -192,6 +208,7 @@ export {
   ItemContent,
   ItemActions,
   ItemGroup,
+  ItemGrid,
   ItemSeparator,
   ItemTitle,
   ItemDescription,

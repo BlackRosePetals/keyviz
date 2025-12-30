@@ -6,14 +6,14 @@ import { NumberInput } from "@/components/ui/number-input";
 import { NumberScrubber } from "@/components/ui/number-input-scrub";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
-import { useKeyEvent } from "@/stores/key_event";
+import { useKeyEventSync as useKeyEvent } from "@/stores/key_event";
 import { useKeyStyle } from "@/stores/key_style";
 import { BounceRightIcon, ComputerIcon, KeyframesDoubleIcon, KeyframesDoubleRemoveIcon, Link02Icon, ParagraphSpacingIcon, TextAlignLeftIcon, Time03Icon, Unlink02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Switch } from "@/components/ui/switch";
 
-export const AppearanceSettings = () => {
 
+export const AppearanceSettings = () => {
     const [marginLinked, setMarginLinked] = useState(true);
 
     const { alignment, marginX, marginY, animation, animationDuration, motionBlur } = useKeyStyle(state => state.appearance);
@@ -22,7 +22,7 @@ export const AppearanceSettings = () => {
     const lingerDurationMs = useKeyEvent(state => state.lingerDurationMs);
     const setLingerDurationMs = useKeyEvent(state => state.setLingerDurationMs);
 
-    return <div className="flex flex-col gap-y-4 p-6 pb-10">
+    return <div className="flex flex-col gap-y-4 p-6">
         <h1 className="text-xl font-semibold">Appearance</h1>
 
         <Item variant="muted">
@@ -61,7 +61,12 @@ export const AppearanceSettings = () => {
                 </ItemDescription>
             </ItemContent>
             <ItemActions>
-                <AlignmentSelector className="w-32" value={alignment} onChange={(value) => setAppearance({ alignment: value })} />
+                <AlignmentSelector
+                    className="w-32 h-28 text-base"
+                    value={alignment}
+                    onChange={(value) => setAppearance({ alignment: value })}
+                    disabledOptions={["center"]}
+                />
             </ItemActions>
         </Item>
 
@@ -84,7 +89,17 @@ export const AppearanceSettings = () => {
                     icon={<span className="ml-0.5 text-xs font-medium">X</span>}
                     className="w-18"
                 />
-                <Toggle variant="default" pressed={marginLinked} onPressedChange={setMarginLinked} aria-label="Margin linked" >
+                <Toggle
+                    variant="default"
+                    pressed={marginLinked}
+                    onPressedChange={(pressed) => {
+                        setMarginLinked(pressed);
+                        if (pressed) {
+                            setAppearance({ marginY: marginX });
+                        }
+                    }}
+                    aria-label="Margin linked"
+                >
                     <HugeiconsIcon icon={marginLinked ? Link02Icon : Unlink02Icon} size="1em" />
                 </Toggle>
                 <NumberScrubber
@@ -106,7 +121,7 @@ export const AppearanceSettings = () => {
                     <HugeiconsIcon icon={Time03Icon} size="1em" /> Duration
                 </ItemTitle>
                 <ItemDescription className="max-w-84">
-                    Amount of time the keys linger before disappearing in seconds
+                    The duration keys stay on screen (in seconds)
                 </ItemDescription>
             </ItemContent>
             <ItemActions>
