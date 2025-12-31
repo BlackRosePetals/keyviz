@@ -1,21 +1,13 @@
-import { EventPayload, KeyEvent, MouseButton, MouseButtonEvent, MouseMoveEvent, MouseWheelEvent } from "@/types/event";
-import { Key } from "@/types/key";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { AllowedKeys, EventPayload, KeyEvent, MODIFIERS, MouseButton, MouseButtonEvent, MouseMoveEvent, MouseWheelEvent, RawKey, RawKeyEvent } from "@/types/event";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { tauriStorage } from "./storage";
 import { createSyncedStore } from "./sync";
 
+
 export const KEY_EVENT_STORE = "key_event_store";
-
 const SCROLL_LINGER_MS = 300;
-const MODIFIERS = new Set([
-    "Shift",
-    "Ctrl",
-    "Alt",
-    "Meta",
-    "Fn",
-]);
 
-export interface KeyEventState {
+interface KeyEventState {
     // ───────────── physical state ─────────────
     pressedKeys: string[];
     pressedMouseButton: MouseButton | null;
@@ -28,7 +20,7 @@ export interface KeyEventState {
         dragging: boolean;
     };
     // ───────────── visual state ─────────────
-    groups: Key[][];
+    groups: KeyEvent[][];
     // ───────────── config ─────────────
     dragThreshold: number;
     filterHotkeys: boolean;
@@ -52,9 +44,9 @@ interface KeyEventActions {
     setToggleShortcut(value: string[]): void;
     // ───────────── event actions ─────────────
     onEvent(event: EventPayload): void;
-    onKeyPress(event: KeyEvent): void;
-    isHotkey(event: KeyEvent, pressedKeys: string[]): boolean;
-    onKeyRelease(event: KeyEvent): void;
+    onKeyPress(event: RawKeyEvent): void;
+    isHotkey(event: RawKeyEvent, pressedKeys: string[]): boolean;
+    onKeyRelease(event: RawKeyEvent): void;
     onMouseMove(event: MouseMoveEvent): void;
     onMouseButtonPress(event: MouseButtonEvent): void;
     onMouseButtonRelease(event: MouseButtonEvent): void;
@@ -70,15 +62,17 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
         pressedKeys: <string[]>[],
         pressedMouseButton: null,
         mouse: { x: 0, y: 0, wheel: 0, dragging: false },
-        groups: [],
+        groups: [ //!test
+            [ new KeyEvent(RawKey.ControlLeft), new KeyEvent(RawKey.KeyA), new KeyEvent(RawKey.Num0) ],
+        ],
         dragThreshold: 50,
         filterHotkeys: true,
-        ignoreModifiers: ["Shift"],
+        ignoreModifiers: [ RawKey.ShiftLeft, RawKey.ShiftRight ],
         showEventHistory: true,
         maxHistory: 5,
         lingerDurationMs: 5_000,
         showMouseEvents: true,
-        toggleShortcut: ["Shift", "F10"],
+        toggleShortcut: [ RawKey.ShiftLeft, RawKey.F10 ],
 
         setDragThreshold(value: number) {
             set({ dragThreshold: value });
@@ -108,6 +102,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
             const state = get();
             switch (event.type) {
                 case "KeyEvent":
+                    if (!AllowedKeys.has(event.name)) return;
                     if (event.pressed) {
                         state.onKeyPress(event);
                     } else {
@@ -132,7 +127,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
                     break;
             }
         },
-        onKeyPress(event: KeyEvent) {
+        onKeyPress(event: RawKeyEvent) {
             const state = get();
             // 0. track pyhsical state
             const pressedKeys = [...state.pressedKeys];
@@ -146,7 +141,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
 
             let groups = [...state.groups];
             const last = groups.length - 1;
-            const key = new Key(event.name);
+            const key = new KeyEvent(event.name);
 
             // 2. check if pressed again
             const existingKey = last >= 0 ? groups[last].find(gKey => gKey.name === key.name) : undefined;
@@ -160,7 +155,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
                 // or
                 // history mode, last group has only this key
                 else {
-                    let group = <Key[]>[];
+                    let group = <KeyEvent[]>[];
                     groups[last].forEach(gKey => {
                         if (gKey.name === key.name) {
                             // update existing key's pressed count and time
@@ -212,7 +207,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
                 return MODIFIERS.has(pressedKeys[0]) && !state.ignoreModifiers.includes(pressedKeys[0]);
             }
         },
-        onKeyRelease(event: KeyEvent) {
+        onKeyRelease(event: RawKeyEvent) {
             const state = get();
             // track physical state
             const pressedKeys = state.pressedKeys.filter(keyName => keyName !== event.name);
@@ -319,7 +314,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
             const now = Date.now();
             let notify = false;
 
-            const groups = <Key[][]>[];
+            const groups = <KeyEvent[][]>[];
 
             if (state.mouse.lastScrollAt && now - state.mouse.lastScrollAt > SCROLL_LINGER_MS) {
                 // simulate scroll key release

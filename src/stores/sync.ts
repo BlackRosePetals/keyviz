@@ -86,11 +86,11 @@ function createSyncedStore<T>(
 // ───────────── Listener for Receiving Updates (used by Receiver Windows) ─────────────
 function listenForUpdates<T>(
     storeName: string,
-    store: UseBoundStore<StoreApi<T>>,
+    setState: (partial: T | Partial<T> | ((state: T) => T | Partial<T>), replace?: false) => void,
 ): Promise<UnlistenFn> {
     return listen<StoreUpdateEventPayload<T>>(storeName, (event) => {
         const { key, value } = event.payload;
-        store.setState(() => {
+        setState(() => {
             // Simply replace the top-level key. 
             // The sender emits the complete updated value for that key, 
             // so we don't need to merge. Merging causes issues with arrays.

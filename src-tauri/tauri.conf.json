@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "keyviz",
-        "width": 800,
-        "height": 600,
+        "width": 400,
+        "height": 200,
         "alwaysOnTop": true
       }
     ],

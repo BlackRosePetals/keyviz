@@ -484,7 +484,7 @@ export const ColorInput = ({ value: colorHex, onChange, disabled, className }: {
         <span className="font-mono">{colorHex}</span>
       </Button>
     </PopoverTrigger>
-    <PopoverContent align="start" className="w-72 h-72">
+    <PopoverContent align="start" className="w-80 h-72">
       <ColorPicker value={colorHex} onChange={c => onChange(c.toString())} className="w-64 h-64">
         <ColorPickerSelection />
         <div className="flex items-center gap-4">

@@ -30,7 +30,12 @@ export const KeycapSettings = () => {
     const setBackground = useKeyStyle(state => state.setBackground);
 
     return <div className="flex flex-col gap-y-4 p-6">
-        <div className="sticky top-6 z-10 w-full h-40 outline bg-linear-to-b from-primary/10 to-background rounded-lg">
+        <div className="sticky top-6 z-10 w-full h-40 outline bg-linear-to-b from-secondary to-background rounded-lg">
+            <ToggleGroup type="single" spacing={10} value={container.style} onValueChange={(value) => setContainer({ style: value as any })} className="m-4">
+                <ToggleGroupItem value="minimal">Minimal</ToggleGroupItem>
+                <ToggleGroupItem value="flat">Flat</ToggleGroupItem>
+                <ToggleGroupItem value="elevated">Elevated</ToggleGroupItem>
+            </ToggleGroup>
         </div>
 
         <Accordion type="multiple" className="w-full" defaultValue={["text"]}>
@@ -200,15 +205,15 @@ export const KeycapSettings = () => {
             <AccordionItem value="border">
                 <AccordionTrigger>Border</AccordionTrigger>
                 <AccordionContent className="h-fit flex flex-col gap-4">
-                    <Item variant="muted">
-                        <ItemContent className="min-h-6 h-full justify-center">
-                            <ItemTitle>Enable</ItemTitle>
-                        </ItemContent>
-                        <ItemActions>
-                            <Switch id="borderEnabled" checked={border.enabled} onCheckedChange={(enabled) => setBorder({ enabled })} />
-                        </ItemActions>
-                    </Item>
                     <ItemGrid>
+                        <Item variant="muted">
+                            <ItemContent className="min-h-6 h-full justify-center">
+                                <ItemTitle>Enable</ItemTitle>
+                            </ItemContent>
+                            <ItemActions>
+                                <Switch id="borderEnabled" checked={border.enabled} onCheckedChange={(enabled) => setBorder({ enabled })} />
+                            </ItemActions>
+                        </Item>
                         <Item variant="muted">
                             <ItemContent>
                                 <ItemTitle>Width</ItemTitle>
@@ -223,7 +228,7 @@ export const KeycapSettings = () => {
                                 />
                             </ItemActions>
                         </Item>
-                        <Item variant="muted">
+                        <Item variant="muted" className={modifier.highlight ? "" : "col-span-2"}>
                             <ItemContent>
                                 <ItemTitle>Color</ItemTitle>
                             </ItemContent>
@@ -235,20 +240,37 @@ export const KeycapSettings = () => {
                                 />
                             </ItemActions>
                         </Item>
+                        {
+                            modifier.highlight && <Item variant="muted">
+                                <ItemContent>
+                                    <ItemTitle>Modifier Color</ItemTitle>
+                                </ItemContent>
+                                <ItemActions>
+                                    <ColorInput
+                                        value={modifier.borderColor}
+                                        onChange={(color) => setModifierStyle({ borderColor: color as string })}
+                                        disabled={!border.enabled}
+                                    />
+                                </ItemActions>
+                            </Item>
+                        }
                     </ItemGrid>
                     <Item variant="muted">
                         <ItemContent>
                             <ItemTitle>Radius</ItemTitle>
                         </ItemContent>
                         <ItemActions>
-                            <div className="w-4 h-4 border-l-2 border-t-2 border-primary/50" style={{ borderTopLeftRadius: `${border.radius}%` }} />
+                            <div className="w-4 h-4 border-l-2 border-t-2 border-primary/50" style={{ borderTopLeftRadius: `${border.radius*100}%` }} />
                             <Slider
+                                min={0}
+                                max={1}
+                                step={0.01}
                                 value={[border.radius]}
                                 onValueChange={(value) => setBorder({ radius: value[0] })}
                                 className="w-40 h-8 mx-2"
                                 disabled={!border.enabled}
                             />
-                            <Label htmlFor="borderRadius" className="w-[4ch] font-mono text-right">{border.radius}%</Label>
+                            <Label htmlFor="borderRadius" className="w-[4ch] font-mono text-right">{(border.radius*100).toFixed(0)}%</Label>
                         </ItemActions>
                     </Item>
                 </AccordionContent>

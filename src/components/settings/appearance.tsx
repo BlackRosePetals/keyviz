@@ -7,7 +7,7 @@ import { NumberScrubber } from "@/components/ui/number-input-scrub";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
 import { useKeyEventSync as useKeyEvent } from "@/stores/key_event";
-import { useKeyStyle } from "@/stores/key_style";
+import { useKeyStyleSync as useKeyStyle } from "@/stores/key_style";
 import { BounceRightIcon, ComputerIcon, KeyframesDoubleIcon, KeyframesDoubleRemoveIcon, Link02Icon, ParagraphSpacingIcon, TextAlignLeftIcon, Time03Icon, Unlink02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Switch } from "@/components/ui/switch";
@@ -16,7 +16,7 @@ import { Switch } from "@/components/ui/switch";
 export const AppearanceSettings = () => {
     const [marginLinked, setMarginLinked] = useState(true);
 
-    const { alignment, marginX, marginY, animation, animationDuration, motionBlur } = useKeyStyle(state => state.appearance);
+    const appearance = useKeyStyle(state => state.appearance);
     const setAppearance = useKeyStyle(state => state.setAppearance);
 
     const lingerDurationMs = useKeyEvent(state => state.lingerDurationMs);
@@ -63,7 +63,7 @@ export const AppearanceSettings = () => {
             <ItemActions>
                 <AlignmentSelector
                     className="w-32 h-28 text-base"
-                    value={alignment}
+                    value={appearance.alignment}
                     onChange={(value) => setAppearance({ alignment: value })}
                     disabledOptions={["center"]}
                 />
@@ -81,8 +81,8 @@ export const AppearanceSettings = () => {
             </ItemContent>
             <ItemActions>
                 <NumberScrubber
-                    value={marginX}
-                    onChange={marginLinked ? (v => { setAppearance({ marginX: v }); setAppearance({ marginY: v }); }) : (v => setAppearance({ marginX: v }))}
+                    value={appearance.marginX}
+                    onChange={marginLinked ? (marginX => { setAppearance({ marginX }); setAppearance({ marginY: marginX }); }) : (marginX => setAppearance({ marginX }))}
                     min={0}
                     max={200}
                     step={1}
@@ -95,7 +95,7 @@ export const AppearanceSettings = () => {
                     onPressedChange={(pressed) => {
                         setMarginLinked(pressed);
                         if (pressed) {
-                            setAppearance({ marginY: marginX });
+                            setAppearance({ marginY: appearance.marginX });
                         }
                     }}
                     aria-label="Margin linked"
@@ -103,8 +103,8 @@ export const AppearanceSettings = () => {
                     <HugeiconsIcon icon={marginLinked ? Link02Icon : Unlink02Icon} size="1em" />
                 </Toggle>
                 <NumberScrubber
-                    value={marginY}
-                    onChange={(value) => setAppearance({ marginY: value })}
+                    value={appearance.marginY}
+                    onChange={(marginY) => setAppearance({ marginY })}
                     min={0}
                     max={200}
                     step={1}
@@ -141,7 +141,7 @@ export const AppearanceSettings = () => {
                 </ItemTitle>
             </ItemContent>
             <ItemActions>
-                <Select value={animation} onValueChange={(value) => setAppearance({ animation: value as any })}>
+                <Select value={appearance.animation} onValueChange={(value) => setAppearance({ animation: value as any })}>
                     <SelectTrigger className="w-32">
                         <SelectValue />
                     </SelectTrigger>
@@ -168,7 +168,7 @@ export const AppearanceSettings = () => {
             </ItemContent>
             <ItemActions>
                 <NumberInput
-                    value={animationDuration / 1000}
+                    value={appearance.animationDuration / 1000}
                     onChange={(value) => setAppearance({ animationDuration: value * 1000 })}
                     step={0.1}
                     className="w-32 h-8"
@@ -186,7 +186,7 @@ export const AppearanceSettings = () => {
                 </ItemDescription>
             </ItemContent>
             <ItemActions>
-                <Switch checked={motionBlur} onCheckedChange={(value) => setAppearance({ motionBlur: value })} />
+                <Switch checked={appearance.motionBlur} onCheckedChange={(motionBlur) => setAppearance({ motionBlur })} />
             </ItemActions>
         </Item>
     </div>;

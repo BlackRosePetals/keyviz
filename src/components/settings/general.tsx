@@ -9,21 +9,22 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from "@/lib/utils";
 import { useKeyEventSync as useKeyEvent } from "@/stores/key_event";
 import { useKeyStyleSync as useKeyStyle } from "@/stores/key_style";
+import { RawKey } from '@/types/event';
 import { ArrowHorizontalIcon, ArrowUp01Icon, ArrowUpBigIcon, ArrowVerticalIcon, CommandIcon, Diamond01Icon, FilterHorizontalIcon, LayerIcon, OptionIcon, ToggleOnIcon, WindowsOldIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
 
 
-const platformName = platform();
-const modifiers = [
-    { icon: ArrowUp01Icon, label: 'Ctrl', value: 'Ctrl' },
-    platformName === 'macos'
-        ? { icon: CommandIcon, label: 'Cmd', value: 'Meta' }
-        : platformName === 'windows'
-            ? { icon: WindowsOldIcon, label: 'Win', value: 'Meta' }
-            : { icon: Diamond01Icon, label: 'Meta', value: 'Meta' },
-    { icon: OptionIcon, label: platformName === 'macos' ? 'Opt' : 'Alt', value: 'Alt' },
-    { icon: ArrowUpBigIcon, label: 'Shift', value: 'Shift' },
-    { label: 'F#', value: 'Fn' },
+const currentPlatform = platform();
+const modifiers: { icon?: IconSvgElement; label: string; value: string[] }[] = [
+    { icon: ArrowUp01Icon, label: 'Ctrl', value: [RawKey.ControlLeft, RawKey.ControlRight] },
+    currentPlatform === 'macos'
+        ? { icon: CommandIcon, label: 'Cmd', value: [RawKey.MetaLeft, RawKey.MetaRight] }
+        : currentPlatform === 'windows'
+            ? { icon: WindowsOldIcon, label: 'Win', value: [RawKey.MetaLeft, RawKey.MetaRight] }
+            : { icon: Diamond01Icon, label: 'Meta', value: [RawKey.MetaLeft, RawKey.MetaRight] },
+    { icon: OptionIcon, label: currentPlatform === 'macos' ? 'Opt' : 'Alt', value: [RawKey.Alt] },
+    { icon: ArrowUpBigIcon, label: 'Shift', value: [RawKey.ShiftLeft, RawKey.ShiftRight] },
+    { label: 'Fn', value: [RawKey.Function] },
 ];
 
 export const GeneralSettings = () => {
@@ -73,12 +74,12 @@ export const GeneralSettings = () => {
                             key={mod.label}
                             icon={mod.icon}
                             label={mod.label}
-                            disabled={ignoreModifiers.includes(mod.value)}
+                            disabled={ignoreModifiers.includes(mod.value[0])}
                             onClick={() => {
-                                if (ignoreModifiers.includes(mod.value)) {
-                                    setIgnoreModifiers(ignoreModifiers.filter(m => m !== mod.value));
+                                if (ignoreModifiers.includes(mod.value[0])) {
+                                    setIgnoreModifiers(ignoreModifiers.filter(m => !mod.value.includes(m)));
                                 } else {
-                                    setIgnoreModifiers([...ignoreModifiers, mod.value]);
+                                    setIgnoreModifiers([...ignoreModifiers, ...mod.value]);
                                 }
                             }}
                         />

@@ -92,6 +92,7 @@ pub fn run() {
                             .min_inner_size(560.0, 480.0)
                             .max_inner_size(1000.0, 800.0)
                             .maximizable(false)
+                            .always_on_top(true)
                             .build()
                             .unwrap();
                     }

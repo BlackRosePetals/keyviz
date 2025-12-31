@@ -13,26 +13,21 @@ function Visualization() {
   const onEvent = useKeyEvent((state) => state.onEvent);
   const tick = useKeyEvent((state) => state.tick);
 
-  // ───────────── input event listener ─────────────
   useEffect(() => {
-    const unsubscribe = listen<EventPayload>("input-event", (event) => onEvent(event.payload));
-    const id = setInterval(tick, 250);
+    const unlistenPromises = [
+      // ───────────── input event listener ─────────────
+      // listen<EventPayload>("input-event", (event) => onEvent(event.payload)),
+      // ───────────── store sync ─────────────
+      listenForUpdates<KeyEventStore>(KEY_EVENT_STORE, useKeyEvent.setState),
+      listenForUpdates<KeyStyleStore>(KEY_STYLE_STORE, useKeyStyle.setState),
+    ];
+    // const id = setInterval(tick, 250);
+    
     return () => {
-      clearInterval(id);
-      unsubscribe.then(f => f());
+      // clearInterval(id);
+      unlistenPromises.forEach((p) => p.then((f) => f()));
     };
   }, []);
-
-  // ───────────── store sync ─────────────
-  useEffect(() => {
-    const unlistenEvent = listenForUpdates<KeyEventStore>(KEY_EVENT_STORE, useKeyEvent);
-    const unlistenStyle = listenForUpdates<KeyStyleStore>(KEY_STYLE_STORE, useKeyStyle);
-    return () => { 
-      unlistenEvent.then(f => f());
-      unlistenStyle.then(f => f());
-    };
-  }, []);
-
 
   return <Overlay />;
 }

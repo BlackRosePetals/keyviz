@@ -16,8 +16,7 @@ export interface AppearanceSettings {
 }
 
 export interface ContainerSettings {
-    keycap: "minimal" | "flat" | "elevated" | "plastic" | "mechanical";
-    useGradient: boolean;
+    style: "minimal" | "flat" | "elevated" | "plastic";
     color: string;
     secondaryColor: string;
 }
@@ -95,8 +94,7 @@ const createKeyStyleStore = createSyncedStore<KeyStyleStore>(
             animationDuration: 300,
         },
         container: {
-            keycap: "elevated",
-            useGradient: true,
+            style: "flat",
             color: "#ffffffff",
             secondaryColor: "#ccccccff",
         },
@@ -120,7 +118,7 @@ const createKeyStyleStore = createSyncedStore<KeyStyleStore>(
             enabled: true,
             color: "#000000ff",
             width: 1,
-            radius: 45,
+            radius: 0.45,
         },
         background: {
             enabled: true,
