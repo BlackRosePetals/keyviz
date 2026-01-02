@@ -3,7 +3,7 @@ import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from "@/co
 import { NumberInput } from "@/components/ui/number-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useKeyEventSync as useKeyEvent } from "@/stores/key_event";
+import { useKeyEvent } from "@/stores/key_event";
 import { useKeyStyle } from '@/stores/key_style';
 import { Cursor01Icon, CursorMagicSelection03FreeIcons, CursorPointer01Icon, Drag03Icon, KeyboardIcon, PaintBoardIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";

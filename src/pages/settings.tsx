@@ -1,13 +1,10 @@
-import { emitTo } from "@tauri-apps/api/event";
-
 import { AboutPage, AppearanceSettings, GeneralSettings, KeycapSettings, MouseSettings } from "@/components/settings";
+import { ThemeModeToggle } from "@/components/theme-mode-toggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { SidebarItem } from "@/components/ui/sidebar-item";
-import { useKeyStyle } from "@/stores/key_style";
 import { ComputerIcon, InformationSquareIcon, KeyboardIcon, Mouse09Icon, Settings03Icon } from "@hugeicons/core-free-icons";
-import { useEffect, useState } from "react";
-
+import { useState } from "react";
 
 
 const sideBar = [
@@ -21,8 +18,8 @@ const Settings = () => {
     const [activeTab, setActiveTab] = useState(sideBar[0].title);
 
     return (
-        <div className="flex w-screen h-screen overflow-hidden">
-            <div className="w-48 p-2 flex flex-col gap-y-1 rounded-xl">
+        <div className="flex w-screen h-screen overflow-hidden border-t">
+            <div className="w-44 p-2 flex flex-col gap-y-1 rounded-xl">
                 <div className="flex items-center m-2 mb-2 gap-x-2">
                     <img src="./tauri.svg" alt="logo" className="w-8 h-8" />
                     <div className="flex flex-col gap-y-1">
@@ -37,9 +34,12 @@ const Settings = () => {
                         </a>
                     ))
                 }
-                <a key="about" onClick={() => setActiveTab("About")} className="mt-auto cursor-pointer">
-                    <SidebarItem item={{ title: "About", icon: InformationSquareIcon }} isActive={activeTab === "About"} />
-                </a>
+                <div className="mt-auto flex gap-2 items-center">
+                    <a key="about" onClick={() => setActiveTab("About")} className="flex-1 cursor-pointer">
+                        <SidebarItem item={{ title: "About", icon: InformationSquareIcon }} isActive={activeTab === "About"} />
+                    </a>
+                    <ThemeModeToggle />
+                </div>
             </div>
             <Separator orientation="vertical" />
             <ScrollArea className="flex-1 relative">
@@ -49,23 +49,8 @@ const Settings = () => {
                 {activeTab === "Mouse" && <MouseSettings />}
                 {activeTab === "About" && <AboutPage />}
             </ScrollArea>
-            <SendUpdate />
         </div>
     );
-}
-
-function SendUpdate() {
-    const keyEvent = useKeyStyle();
-
-    useEffect(() => {
-        emitTo(
-            "main",
-            "store-event",
-            { isActive: true },
-        )
-    }, [keyEvent])
-
-    return null;
 }
 
 export default Settings;

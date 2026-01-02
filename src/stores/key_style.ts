@@ -2,6 +2,7 @@ import { Alignment } from "@/types/style";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { tauriStorage } from "./storage";
 import { createSyncedStore } from "./sync";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 export const KEY_STYLE_STORE = "key_style_store";
 
@@ -10,15 +11,17 @@ export interface AppearanceSettings {
     alignment: Alignment;
     marginX: number;
     marginY: number;
-    animation: "none" | "fade" | "zoom" | "slide";
+    animation: "none" | "fade" | "zoom" | "float" | "slide";
     animationDuration: number;
-    motionBlur: boolean;
 }
 
 export interface ContainerSettings {
     style: "minimal" | "flat" | "elevated" | "plastic";
     color: string;
     secondaryColor: string;
+    showIcon: boolean;
+    showSymbol: boolean;
+    useGradient: boolean;
 }
 
 export interface ModifierSettings {
@@ -33,10 +36,8 @@ export interface ModifierSettings {
 export interface TextSettings {
     size: number;
     color: string;
-    caps: "uppercase" | "title" | "lowercase";
+    caps: "uppercase" | "capitalize" | "lowercase";
     alignment: Alignment;
-    showIcon: boolean;
-    showSymbol: boolean;
 }
 
 export interface BorderSettings {
@@ -91,33 +92,34 @@ const createKeyStyleStore = createSyncedStore<KeyStyleStore>(
             marginY: 5,
             animation: "fade",
             motionBlur: true,
-            animationDuration: 300,
+            animationDuration: 0.2,
         },
         container: {
-            style: "flat",
+            style: "elevated",
             color: "#ffffffff",
-            secondaryColor: "#ccccccff",
+            secondaryColor: "#000000ff",
+            showIcon: true,
+            showSymbol: true,
+            useGradient: false,
         },
         modifier: {
             highlight: true,
             color: "#ff0000ff",
-            secondaryColor: "#cc0000ff",
+            secondaryColor: "#990000ff",
             textColor: "#ffffffff",
             textVariant: "text-short",
             borderColor: "#990000ff",
         },
         text: {
-            size: 18,
+            size: 24,
             color: "#000000ff",
-            caps: "title",
+            caps: "capitalize",
             alignment: "bottom-center",
-            showIcon: true,
-            showSymbol: true,
         },
         border: {
             enabled: true,
-            color: "#000000ff",
             width: 1,
+            color: "#000000ff",
             radius: 0.45,
         },
         background: {
@@ -147,5 +149,4 @@ const createKeyStyleStore = createSyncedStore<KeyStyleStore>(
     }),
 );
 
-export const useKeyStyle = createKeyStyleStore(false);
-export const useKeyStyleSync = createKeyStyleStore(true);
+export const useKeyStyle = createKeyStyleStore(getCurrentWindow().label === "settings");

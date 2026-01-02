@@ -1,5 +1,3 @@
-import './visualization.css';
-
 import { Overlay } from "@/components/overlay";
 import { KEY_EVENT_STORE, KeyEventStore, useKeyEvent } from "@/stores/key_event";
 import { KEY_STYLE_STORE, KeyStyleStore, useKeyStyle } from '@/stores/key_style';
@@ -21,10 +19,10 @@ function Visualization() {
       listenForUpdates<KeyEventStore>(KEY_EVENT_STORE, useKeyEvent.setState),
       listenForUpdates<KeyStyleStore>(KEY_STYLE_STORE, useKeyStyle.setState),
     ];
-    // const id = setInterval(tick, 250);
+    const id = setInterval(tick, 250);
     
     return () => {
-      // clearInterval(id);
+      clearInterval(id);
       unlistenPromises.forEach((p) => p.then((f) => f()));
     };
   }, []);

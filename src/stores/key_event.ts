@@ -2,6 +2,7 @@ import { AllowedKeys, EventPayload, KeyEvent, MODIFIERS, MouseButton, MouseButto
 import { createJSONStorage, persist } from "zustand/middleware";
 import { tauriStorage } from "./storage";
 import { createSyncedStore } from "./sync";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 
 export const KEY_EVENT_STORE = "key_event_store";
@@ -63,7 +64,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
         pressedMouseButton: null,
         mouse: { x: 0, y: 0, wheel: 0, dragging: false },
         groups: [ //!test
-            [ new KeyEvent(RawKey.ControlLeft), new KeyEvent(RawKey.KeyA), new KeyEvent(RawKey.Num0) ],
+            // [ new KeyEvent(RawKey.ControlLeft), new KeyEvent(RawKey.KeyA), new KeyEvent(RawKey.Num0) ],
         ],
         dragThreshold: 50,
         filterHotkeys: true,
@@ -355,5 +356,4 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
     }),
 );
 
-export const useKeyEvent = createKeyEventStore(false);
-export const useKeyEventSync = createKeyEventStore(true);
+export const useKeyEvent = createKeyEventStore(getCurrentWindow().label === "settings");

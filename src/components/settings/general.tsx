@@ -3,12 +3,12 @@ import { platform } from '@tauri-apps/plugin-os';
 
 import { Item, ItemActions, ItemContent, ItemDescription, ItemHeader, ItemTitle } from "@/components/ui/item";
 import { NumberInput } from '@/components/ui/number-input';
-import { ShortcutRecorder } from '@/components/ui/shortcut-recorder';
+import { ShortcutRecorder } from '@/components/shortcut-recorder';
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from "@/lib/utils";
-import { useKeyEventSync as useKeyEvent } from "@/stores/key_event";
-import { useKeyStyleSync as useKeyStyle } from "@/stores/key_style";
+import { useKeyEvent } from "@/stores/key_event";
+import { useKeyStyle } from "@/stores/key_style";
 import { RawKey } from '@/types/event';
 import { ArrowHorizontalIcon, ArrowUp01Icon, ArrowUpBigIcon, ArrowVerticalIcon, CommandIcon, Diamond01Icon, FilterHorizontalIcon, LayerIcon, OptionIcon, ToggleOnIcon, WindowsOldIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";

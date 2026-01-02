@@ -6,11 +6,10 @@ import { NumberInput } from "@/components/ui/number-input";
 import { NumberScrubber } from "@/components/ui/number-input-scrub";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
-import { useKeyEventSync as useKeyEvent } from "@/stores/key_event";
-import { useKeyStyleSync as useKeyStyle } from "@/stores/key_style";
-import { BounceRightIcon, ComputerIcon, KeyframesDoubleIcon, KeyframesDoubleRemoveIcon, Link02Icon, ParagraphSpacingIcon, TextAlignLeftIcon, Time03Icon, Unlink02Icon } from "@hugeicons/core-free-icons";
+import { useKeyEvent } from "@/stores/key_event";
+import { useKeyStyle } from "@/stores/key_style";
+import { ComputerIcon, KeyframesDoubleIcon, KeyframesDoubleRemoveIcon, Link02Icon, ParagraphSpacingIcon, TextAlignLeftIcon, Time03Icon, Unlink02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Switch } from "@/components/ui/switch";
 
 
 export const AppearanceSettings = () => {
@@ -150,6 +149,7 @@ export const AppearanceSettings = () => {
                             <SelectItem value="none">None</SelectItem>
                             <SelectItem value="fade">Fade</SelectItem>
                             <SelectItem value="zoom">Zoom</SelectItem>
+                            <SelectItem value="float">Float</SelectItem>
                             <SelectItem value="slide">Slide</SelectItem>
                         </SelectGroup>
                     </SelectContent>
@@ -168,25 +168,13 @@ export const AppearanceSettings = () => {
             </ItemContent>
             <ItemActions>
                 <NumberInput
-                    value={appearance.animationDuration / 1000}
-                    onChange={(value) => setAppearance({ animationDuration: value * 1000 })}
-                    step={0.1}
+                    value={appearance.animationDuration}
+                    onChange={(animationDuration) => setAppearance({ animationDuration })}
+                    step={0.05}
+                    minValue={0.05}
+                    maxValue={1}
                     className="w-32 h-8"
                 />
-            </ItemActions>
-        </Item>
-
-        <Item variant="muted">
-            <ItemContent>
-                <ItemTitle>
-                    <HugeiconsIcon icon={BounceRightIcon} size="1em" /> Motion Blur
-                </ItemTitle>
-                <ItemDescription>
-                    Enable motion blur effect on key animations
-                </ItemDescription>
-            </ItemContent>
-            <ItemActions>
-                <Switch checked={appearance.motionBlur} onCheckedChange={(motionBlur) => setAppearance({ motionBlur })} />
             </ItemActions>
         </Item>
     </div>;

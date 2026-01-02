@@ -1,6 +1,6 @@
 use std::{sync::Mutex, thread};
 
-use rdev::{listen, Button, EventType, Key};
+use rdev::{listen, Button, EventType};
 use serde::Serialize;
 use tauri::{image::Image, include_image, menu::MenuItem, AppHandle, Emitter, Manager, Wry};
 

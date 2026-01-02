@@ -1,8 +1,7 @@
-import { platform } from '@tauri-apps/plugin-os';
-import React, { useState, useEffect, useRef } from 'react';
+import { keymaps } from '@/lib/keymaps';
+import { MODIFIERS, RawKey } from '@/types/event';
+import { useEffect, useRef, useState } from 'react';
 
-
-const currentPlatform = platform();
 
 // --- Types ---
 interface ShortcutInputProps {
@@ -11,12 +10,39 @@ interface ShortcutInputProps {
   placeholder?: string;
 }
 
-// --- Helper: Format keys for display ---
+const punctuationMap: { [key: string]: string } = {
+  "`": "BackQuote",
+  "-": "Minus",
+  "=": "Equal",
+  "[": "LeftBracket",
+  "]": "RightBracket",
+  "\\": "BackSlash",
+  ";": "SemiColon",
+  "'": "Quote",
+  ",": "Comma",
+  ".": "Dot",
+  "/": "Slash",
+};
+
+// --- Helper: Format keys into RawKey ---
 const formatKey = (key: string) => {
-  if (key === ' ') return 'Space';
-  if (key === 'Control') return 'Ctrl';
-  // Capitalize first letter
-  return key.charAt(0).toUpperCase() + key.slice(1);
+  // Alphabetic keys
+  if (key.length === 1 && key.match(/[a-zA-Z]/)) {
+    return `Key${key.toUpperCase()}`;
+  }
+  // Numeric keys
+  else if (key.length === 1 && key.match(/[0-9]/)) {
+    return `Num${key}`;
+  }
+  // Arrow keys
+  else if (key.startsWith("Arrow")) {
+    return `${key.replace("Arrow", "")}Arrow`;
+  }
+  // Punctuation keys
+  else if (punctuationMap[key]) {
+    return punctuationMap[key];
+  }
+  return key;
 };
 
 const ShortcutRecorder: React.FC<ShortcutInputProps> = ({
@@ -35,7 +61,8 @@ const ShortcutRecorder: React.FC<ShortcutInputProps> = ({
       e.preventDefault();
       e.stopPropagation();
 
-      const { key, code, ctrlKey, altKey, shiftKey, metaKey } = e;
+      const { key, ctrlKey, altKey, shiftKey, metaKey, repeat } = e;
+      if (repeat) return;
 
       // 1. Handle Cancel (Escape)
       if (key === 'Escape') {
@@ -53,16 +80,13 @@ const ShortcutRecorder: React.FC<ShortcutInputProps> = ({
 
       // 3. Identify Modifiers
       const modifiers = [];
-      if (ctrlKey) modifiers.push('Ctrl');
-      if (shiftKey) modifiers.push('Shift');
-      if (altKey) modifiers.push('Alt');
-      if (metaKey) modifiers.push(currentPlatform === 'macos' ? 'Cmd' : 'Meta');
+      if (ctrlKey) modifiers.push(RawKey.ControlLeft);
+      if (shiftKey) modifiers.push(RawKey.ShiftLeft);
+      if (altKey) modifiers.push(RawKey.Alt);
+      if (metaKey) modifiers.push(RawKey.MetaLeft);
 
       // 4. Identify the main key
-      // We ignore the key event if it is just a modifier key being pressed alone
-      const isModifierKey = ['Control', 'Shift', 'Alt', 'Meta'].includes(key);
-
-      if (isModifierKey) {
+      if (['Control', 'Shift', 'Alt', 'Meta'].includes(key)) {
         // If user is just holding modifiers, we don't set the value yet,
         // but typically UI waits for a non-modifier key.
         // For this simple implementation, we assume we wait for a non-modifier.
@@ -70,9 +94,7 @@ const ShortcutRecorder: React.FC<ShortcutInputProps> = ({
       }
 
       // 5. Construct final combo
-      // We use code for keys like 'KeyA' to act as 'A', but 'key' usually suffices for display
-      const finalKey = key.length === 1 ? key.toUpperCase() : formatKey(key);
-
+      const finalKey = formatKey(key);
       const newShortcut = [...new Set([...modifiers, finalKey])]; // Set removes duplicates
 
       onChange(newShortcut);
@@ -118,7 +140,7 @@ const ShortcutRecorder: React.FC<ShortcutInputProps> = ({
         ) : (
           <div className="flex gap-2">
             {value.length > 0 ? (
-              value.map(k => <KeyCap key={k} label={k} />)
+              value.map(k => <KeyCap key={k} label={keymaps[k]?.label ?? k} />)
             ) : (
               <span className="text-gray-400 select-none">{placeholder}</span>
             )}
@@ -132,11 +154,12 @@ const ShortcutRecorder: React.FC<ShortcutInputProps> = ({
 const KeyCap = ({ label }: { label: string }) => {
   return (
     <div className="h-9 bg-linear-to-b from-primary/50 to-secondary rounded-lg">
-      <div className="m-px mb-0.5 px-3 py-1.5 bg-secondary rounded-lg">
-        {label}                  
+      <div className="m-px mb-0.5 px-3 py-1.5 bg-secondary rounded-lg capitalize">
+        {label}
       </div>
     </div>
   );
 }
 
 export { ShortcutRecorder };
+
