@@ -1,11 +1,10 @@
-import { AnimatePresence, motion, Variants } from "motion/react";
-import { useKeyEvent } from "../stores/key_event";
+import { easeInQuint, easeOutQuint } from "@/lib/utils";
+import { useKeyEvent } from "@/stores/key_event";
 import { useKeyStyle } from "@/stores/key_style";
-import { Keycap } from "./keycaps";
 import { alignmentForColumn } from "@/types/style";
-import { RawKey } from "@/types/event";
+import { AnimatePresence, motion, Variants } from "motion/react";
 import { useMemo } from "react";
-import { easeOutQuint, easeInQuint } from "@/lib/utils";
+import { Keycap } from "./keycaps";
 
 
 const fadeVariants: Variants = {
@@ -13,8 +12,8 @@ const fadeVariants: Variants = {
     hidden: { opacity: 0 },
 }
 
-export const Overlay = () => {
-    const { pressedKeys, groups, onEvent } = useKeyEvent();
+export const KeyOverlay = () => {
+    const { pressedKeys, groups } = useKeyEvent();
     const { appearance, container, text, border, background } = useKeyStyle();
 
     const alignment = alignmentForColumn[appearance.alignment];
@@ -46,20 +45,8 @@ export const Overlay = () => {
         }
     }, [appearance.animation, text.size]);
 
-    const play = () => {
-        // Simulate key press
-        onEvent({ type: "KeyEvent", name: RawKey.ControlLeft, pressed: true });
-        onEvent({ type: "KeyEvent", name: RawKey.KeyA, pressed: true });
-
-        // Simulate key release
-        setTimeout(() => {
-            onEvent({ type: "KeyEvent", name: RawKey.KeyA, pressed: false });
-            onEvent({ type: "KeyEvent", name: RawKey.ControlLeft, pressed: false });
-        }, 1_000);
-    }
-
     return (
-        <div className="flex w-screen h-screen justify-end items-center" style={{
+        <div className="flex w-full h-full justify-end items-center" style={{
             flexDirection: appearance.flexDirection,
             paddingBlock: appearance.marginY,
             paddingInline: appearance.marginX,
@@ -67,7 +54,6 @@ export const Overlay = () => {
             justifyContent: alignment.justifyContent,
             position: "relative",
         }}>
-            <button className="absolute top-4 right-4" onClick={play}>{appearance.animation}</button>
             <AnimatePresence>
                 {groups.map((group, index) => (
                     <motion.div
@@ -94,7 +80,11 @@ export const Overlay = () => {
                                     initial="hidden"
                                     animate="visible"
                                     exit="hidden"
-                                    transition={{ ease: [easeOutQuint, easeInQuint], duration: appearance.animationDuration }}
+                                    transition={{
+                                        ease: [easeOutQuint, easeInQuint],
+                                        duration: appearance.animationDuration
+                                    }}
+                                    className="cursor-pointer"
                                 >
                                     <Keycap
                                         keyData={key}

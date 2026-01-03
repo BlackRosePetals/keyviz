@@ -7,11 +7,13 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 
 export const KEY_EVENT_STORE = "key_event_store";
 const SCROLL_LINGER_MS = 300;
+const MIN_CLICK_DISPLAY_MS = 200;
 
 interface KeyEventState {
     // ───────────── physical state ─────────────
     pressedKeys: string[];
     pressedMouseButton: MouseButton | null;
+    lastMouseButtonPressAt?: number;
     mouse: {
         x: number;
         y: number;
@@ -22,6 +24,7 @@ interface KeyEventState {
     };
     // ───────────── visual state ─────────────
     groups: KeyEvent[][];
+    showMouseClicked: boolean;
     // ───────────── config ─────────────
     dragThreshold: number;
     filterHotkeys: boolean;
@@ -64,16 +67,17 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
         pressedMouseButton: null,
         mouse: { x: 0, y: 0, wheel: 0, dragging: false },
         groups: [ //!test
-            // [ new KeyEvent(RawKey.ControlLeft), new KeyEvent(RawKey.KeyA), new KeyEvent(RawKey.Num0) ],
+            [new KeyEvent(RawKey.ControlLeft), new KeyEvent(RawKey.KeyA), new KeyEvent(RawKey.Num0)],
         ],
+        showMouseClicked: false,
         dragThreshold: 50,
         filterHotkeys: true,
-        ignoreModifiers: [ RawKey.ShiftLeft, RawKey.ShiftRight ],
+        ignoreModifiers: [RawKey.ShiftLeft, RawKey.ShiftRight],
         showEventHistory: true,
         maxHistory: 5,
         lingerDurationMs: 5_000,
         showMouseEvents: true,
-        toggleShortcut: [ RawKey.ShiftLeft, RawKey.F10 ],
+        toggleShortcut: [RawKey.ShiftLeft, RawKey.F10],
 
         setDragThreshold(value: number) {
             set({ dragThreshold: value });
@@ -272,7 +276,12 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
                 state.onKeyPress({ type: "KeyEvent", name: event.button.toString(), pressed: true });
             }
 
-            set({ pressedMouseButton: event.button, mouse });
+            set({
+                pressedMouseButton: event.button,
+                lastMouseButtonPressAt: Date.now(),
+                showMouseClicked: true,
+                mouse
+            });
         },
         onMouseButtonRelease(event: MouseButtonEvent) {
             const state = get();
@@ -290,8 +299,19 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
                 // simulate mouse button release as key
                 state.onKeyRelease({ type: "KeyEvent", name: event.button.toString(), pressed: false });
             }
-
-            set({ pressedMouseButton: null, mouse });
+            // hide click visualization after short delay
+            let showMouseClicked = true;
+            let lastMouseButtonPressAt = state.lastMouseButtonPressAt;
+            if (Date.now() - state.lastMouseButtonPressAt! > MIN_CLICK_DISPLAY_MS) {
+                showMouseClicked = false;
+                lastMouseButtonPressAt = undefined;
+            }// else, will be turned off in tick()
+            set({
+                pressedMouseButton: null,
+                lastMouseButtonPressAt,
+                showMouseClicked,
+                mouse
+            });
         },
         onMouseWheel(event: MouseWheelEvent) {
             // bug: history mode, ctrl + scroll, scroll
@@ -316,6 +336,14 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
             let notify = false;
 
             const groups = <KeyEvent[][]>[];
+
+            if (
+                !state.pressedMouseButton
+                && state.lastMouseButtonPressAt
+                && now - state.lastMouseButtonPressAt > MIN_CLICK_DISPLAY_MS
+            ) {
+                set({ showMouseClicked: false, lastMouseButtonPressAt: undefined });
+            }
 
             if (state.mouse.lastScrollAt && now - state.mouse.lastScrollAt > SCROLL_LINGER_MS) {
                 // simulate scroll key release
@@ -350,7 +378,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
         name: KEY_EVENT_STORE,
         storage: createJSONStorage(() => tauriStorage),
         partialize: (state) => {
-            const {  pressedKeys, pressedMouseButton, mouse, groups, ...persistedState } = state;
+            const { pressedKeys, pressedMouseButton, mouse, groups, ...persistedState } = state;
             return persistedState;
         },
     }),

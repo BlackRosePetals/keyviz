@@ -14,7 +14,6 @@ use app::event::start_listener;
 use app::state::{AppState, KeyEventStore};
 use tauri_plugin_store::StoreExt;
 
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -22,8 +21,12 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            let app_handle = app.handle();
+            // prepare window
+            if let Some(window) = app.get_webview_window("main") {
+                window.set_ignore_cursor_events(true)?;
+            }
 
+            let app_handle = app.handle();
             let mut app_state = AppState::new();
 
             // load toggleShortcut from store if it exists
@@ -85,6 +88,10 @@ pub fn run() {
                         }
                     }
                     "settings" => {
+                        if let Some(window) = app.get_webview_window("settings") {
+                            let _ = window.set_focus();
+                            return;
+                        }
                         let webview_url = tauri::WebviewUrl::App("index.html#/settings".into());
                         WebviewWindowBuilder::new(app, "settings", webview_url.clone())
                             .title("Settings")
@@ -92,7 +99,6 @@ pub fn run() {
                             .min_inner_size(560.0, 480.0)
                             .max_inner_size(1000.0, 800.0)
                             .maximizable(false)
-                            .always_on_top(true)
                             .build()
                             .unwrap();
                     }

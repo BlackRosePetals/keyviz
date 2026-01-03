@@ -12,15 +12,22 @@
   "app": {
     "windows": [
       {
-        "title": "keyviz",
-        "width": 400,
-        "height": 200,
-        "alwaysOnTop": true
+        "label": "main",
+        "title": "Keyviz",
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "decorations": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "transparent": true,
+        "focusable": false,
+        "fullscreen": true
       }
     ],
     "security": {
       "csp": null
-    }
+    },
+    "macOSPrivateApi": true
   },
   "bundle": {
     "active": true,

@@ -18,7 +18,7 @@ const Settings = () => {
     const [activeTab, setActiveTab] = useState(sideBar[0].title);
 
     return (
-        <div className="flex w-screen h-screen overflow-hidden border-t">
+        <div className="flex w-screen h-screen overflow-hidden border-t bg-background">
             <div className="w-44 p-2 flex flex-col gap-y-1 rounded-xl">
                 <div className="flex items-center m-2 mb-2 gap-x-2">
                     <img src="./tauri.svg" alt="logo" className="w-8 h-8" />

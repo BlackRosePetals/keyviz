@@ -55,9 +55,8 @@ export interface BackgroundSettings {
 export interface MouseSettings {
     showClicks: boolean;
     keepHighlight: boolean;
-    filled: boolean;
+    size: number;
     color: string;
-    animation: "ripple" | "flash" | "static";
 }
 
 export interface KeyStyleState {
@@ -130,9 +129,8 @@ const createKeyStyleStore = createSyncedStore<KeyStyleStore>(
             showClicks: true,
             keepHighlight: false,
             showEvents: true,
-            filled: false,
+            size: 150,
             color: "#0000ffff",
-            animation: "ripple",
         },
 
         setAppearance: (appearance) => set((state) => ({ appearance: { ...state.appearance, ...appearance } })),
