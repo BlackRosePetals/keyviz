@@ -1,5 +1,6 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { AlignmentSelector } from "@/components/ui/alignment-selector";
+import { Button } from "@/components/ui/button";
 import { ColorInput } from "@/components/ui/color-picker";
 import { Item, ItemActions, ItemContent, ItemDescription, ItemGrid, ItemGroup, ItemTitle } from "@/components/ui/item";
 import { Label } from "@/components/ui/label";
@@ -9,9 +10,8 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useKeyStyle } from "@/stores/key_style";
-import { PaintBoardIcon, Refresh01Icon } from "@hugeicons/core-free-icons";
+import { AlignHorizontalCenterIcon, AlignLeftIcon, AlignRightIcon, Download01Icon, PaintBoardIcon, Refresh01Icon, Upload01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
 
@@ -110,14 +110,20 @@ export const colorSchemes: KeycapTheme[] = [
 ];
 
 export const KeycapSettings = () => {
+    const appearance = useKeyStyle(state => state.appearance);
+    const setAppearance = useKeyStyle(state => state.setAppearance);
+
     const text = useKeyStyle(state => state.text);
     const setTextStyle = useKeyStyle(state => state.setText);
+
+    const layout = useKeyStyle(state => state.layout);
+    const setLayoutStyle = useKeyStyle(state => state.setLayout);
 
     const modifier = useKeyStyle(state => state.modifier);
     const setModifierStyle = useKeyStyle(state => state.setModifier);
 
-    const container = useKeyStyle(state => state.container);
-    const setContainerStyle = useKeyStyle(state => state.setContainer);
+    const color = useKeyStyle(state => state.color);
+    const setColorStyle = useKeyStyle(state => state.setColor);
 
     const border = useKeyStyle(state => state.border);
     const setBorderStyle = useKeyStyle(state => state.setBorder);
@@ -125,21 +131,27 @@ export const KeycapSettings = () => {
     const background = useKeyStyle(state => state.background);
     const setBackgroundStyle = useKeyStyle(state => state.setBackground);
 
+    const importStyle = useKeyStyle(state => state.import);
+    const exportStyle = useKeyStyle(state => state.export);
+
     const onStyleChange = (value: string) => {
         if (value === "minimal") {
-            setModifierStyle({ highlight: false });
+            setModifierStyle({ highlight: false, textVariant: "icon" });
+            setLayoutStyle({ showIcon: true });
         }
-        setContainerStyle({ style: value as any });
+        setAppearance({ style: value as any });
     }
 
     const randomizeStyle = () => {
         const scheme = colorSchemes[Math.floor(Math.random() * colorSchemes.length)];
-        setContainerStyle({
+        setLayoutStyle({
+            showIcon: Math.random() > 0.5,
+            showSymbol: Math.random() > 0.5,
+        });
+        setColorStyle({
             color: scheme.primary,
             secondaryColor: scheme.secondary,
-            showIcon: Math.random() > 0.5,
             useGradient: Math.random() > 0.5,
-            showSymbol: Math.random() > 0.5
         });
         setBorderStyle({ color: scheme.secondary, radius: Math.random() });
         setTextStyle({ color: scheme.text });
@@ -158,16 +170,24 @@ export const KeycapSettings = () => {
     }
 
     return <div className="flex flex-col p-6 gap-y-4">
-        <Item variant="outline">
-            <ItemContent>
-                <ItemTitle>
+        <Item variant="muted">
+            <ItemActions className="w-full">
+                <ItemTitle className="mr-2">
                     Preset
                 </ItemTitle>
-            </ItemContent>
-            <ItemActions>
-                <Button variant="ghost" size="icon" onClick={randomizeStyle} className="active:rotate-90">
-                    <HugeiconsIcon icon={Refresh01Icon} />
-                </Button>
+                <Select value={appearance.style} onValueChange={onStyleChange}>
+                    <SelectTrigger className="w-28">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectItem value="minimal" >Minimal</SelectItem>
+                            <SelectItem value="flat"    >Flat</SelectItem>
+                            <SelectItem value="elevated">Elevated</SelectItem>
+                            <SelectItem value="plastic" >Plastic</SelectItem>
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="icon">
@@ -179,7 +199,7 @@ export const KeycapSettings = () => {
                             {
                                 colorSchemes.map((scheme) => (
                                     <DropdownMenuItem key={scheme.name} onClick={() => {
-                                        setContainerStyle({ color: scheme.primary, secondaryColor: scheme.secondary });
+                                        setColorStyle({ color: scheme.primary, secondaryColor: scheme.secondary });
                                         setBorderStyle({ color: scheme.secondary });
                                         setTextStyle({ color: scheme.text });
                                     }
@@ -196,19 +216,16 @@ export const KeycapSettings = () => {
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                <Select value={container.style} onValueChange={onStyleChange}>
-                    <SelectTrigger className="w-28">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                            <SelectItem value="minimal" >Minimal</SelectItem>
-                            <SelectItem value="flat"    >Flat</SelectItem>
-                            <SelectItem value="elevated">Elevated</SelectItem>
-                            <SelectItem value="plastic" >Plastic</SelectItem>
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
+                <Button variant="ghost" size="icon" onClick={randomizeStyle} className="active:rotate-90">
+                    <HugeiconsIcon icon={Refresh01Icon} />
+                </Button>
+
+                <Button variant="outline" size="sm" className="ml-auto" onClick={importStyle}>
+                    <HugeiconsIcon icon={Download01Icon} className="mr-2" /> Import
+                </Button>
+                <Button variant="outline" size="sm" onClick={exportStyle}>
+                    <HugeiconsIcon icon={Upload01Icon} className="mr-2" /> Export
+                </Button>
             </ItemActions>
         </Item>
 
@@ -243,7 +260,7 @@ export const KeycapSettings = () => {
                                     <Select value={modifier.textVariant} onValueChange={(value) => {
                                         setModifierStyle({ textVariant: value as any });
                                         if (value === "icon") {
-                                            setContainerStyle({ showIcon: true });
+                                            setLayoutStyle({ showIcon: true });
                                         }
                                     }}>
                                         <SelectTrigger className="w-28">
@@ -301,46 +318,67 @@ export const KeycapSettings = () => {
                 </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="container">
-                <AccordionTrigger>Container</AccordionTrigger>
+            <AccordionItem value="layout">
+                <AccordionTrigger>Layout</AccordionTrigger>
                 <AccordionContent className="h-fit flex flex-col gap-4">
-                    <ItemGrid className="min-h-14 md:grid-cols-3">
+                    <ItemGrid>
+
                         <Item variant="muted">
                             <ItemContent>
                                 <ItemTitle>Icon</ItemTitle>
                             </ItemContent>
                             <ItemActions>
                                 <Switch
-                                    checked={container.showIcon}
-                                    onCheckedChange={(showIcon) => setContainerStyle({ showIcon })}
+                                    checked={layout.showIcon}
+                                    onCheckedChange={(showIcon) => setLayoutStyle({ showIcon })}
                                     disabled={modifier.textVariant === "icon"}
                                 />
                             </ItemActions>
                         </Item>
                         <Item variant="muted">
                             <ItemContent>
-                                <ItemTitle>Symbol</ItemTitle>
+                                <ItemTitle>Alignment</ItemTitle>
                             </ItemContent>
                             <ItemActions>
-                                <Switch
-                                    checked={container.showSymbol}
-                                    onCheckedChange={(showSymbol) => setContainerStyle({ showSymbol })}
-                                />
-                            </ItemActions>
-                        </Item>
-                        <Item variant="muted">
-                            <ItemContent>
-                                <ItemTitle>Shading</ItemTitle>
-                            </ItemContent>
-                            <ItemActions>
-                                <Switch
-                                    checked={container.useGradient}
-                                    onCheckedChange={(useGradient) => setContainerStyle({ useGradient })}
-                                    disabled={modifier.textVariant === "icon"}
-                                />
+                                <ToggleGroup
+                                    type="single"
+                                    value={layout.iconAlignment}
+                                    onValueChange={(value) => setLayoutStyle({ iconAlignment: value as "flex-start" | "flex-end" | "center" })}
+                                    variant="outline"
+                                    className="w-28"
+                                    disabled={!layout.showIcon}
+                                >
+                                    <ToggleGroupItem className="w-1/3" value="flex-start">
+                                        <HugeiconsIcon icon={AlignLeftIcon} />
+                                    </ToggleGroupItem>
+                                    <ToggleGroupItem className="w-1/3" value="center">
+                                        <HugeiconsIcon icon={AlignHorizontalCenterIcon} />
+                                    </ToggleGroupItem>
+                                    <ToggleGroupItem className="w-1/3" value="flex-end">
+                                        <HugeiconsIcon icon={AlignRightIcon} />
+                                    </ToggleGroupItem>
+                                </ToggleGroup>
                             </ItemActions>
                         </Item>
                     </ItemGrid>
+                    <Item variant="muted">
+                        <ItemContent>
+                            <ItemTitle>Symbol</ItemTitle>
+                            <ItemDescription>Display symbol characters like !, @, #, etc.</ItemDescription>
+                        </ItemContent>
+                        <ItemActions>
+                            <Switch
+                                checked={layout.showSymbol}
+                                onCheckedChange={(showSymbol) => setLayoutStyle({ showSymbol })}
+                            />
+                        </ItemActions>
+                    </Item>
+                </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="container">
+                <AccordionTrigger>Container</AccordionTrigger>
+                <AccordionContent className="h-fit flex flex-col gap-4">
                     <Item variant="muted">
                         <ItemContent>
                             <ItemTitle>Highlight Modifier</ItemTitle>
@@ -350,15 +388,26 @@ export const KeycapSettings = () => {
                             <Switch checked={modifier.highlight} onCheckedChange={(highlight) => setModifierStyle({ highlight })} />
                         </ItemActions>
                     </Item>
+                    <Item variant="muted">
+                        <ItemContent>
+                            <ItemTitle>Gradient</ItemTitle>
+                        </ItemContent>
+                        <ItemActions>
+                            <Switch
+                                checked={color.useGradient}
+                                onCheckedChange={(useGradient) => setColorStyle({ useGradient })}
+                            />
+                        </ItemActions>
+                    </Item>
                     {
-                        (container.style === "minimal" || container.style === "flat") ?
+                        (appearance.style === "minimal" || appearance.style === "flat") ?
                             <ItemGrid>
                                 <Item variant="muted" className={modifier.highlight ? "" : "col-span-2"}>
                                     <ItemContent>
                                         <ItemTitle>Normal</ItemTitle>
                                     </ItemContent>
                                     <ItemActions>
-                                        <ColorInput value={container.color} onChange={(color) => setContainerStyle({ color: color as string })} />
+                                        <ColorInput value={color.color} onChange={(color) => setColorStyle({ color: color as string })} />
                                     </ItemActions>
                                 </Item>
                                 {
@@ -382,8 +431,8 @@ export const KeycapSettings = () => {
                                         </ItemContent>
                                         <ItemActions>
                                             <ColorInput
-                                                value={container.color}
-                                                onChange={(color) => setContainerStyle({ color })}
+                                                value={color.color}
+                                                onChange={(color) => setColorStyle({ color })}
                                             />
                                         </ItemActions>
                                     </Item>
@@ -393,8 +442,8 @@ export const KeycapSettings = () => {
                                         </ItemContent>
                                         <ItemActions>
                                             <ColorInput
-                                                value={container.secondaryColor}
-                                                onChange={(secondaryColor) => setContainerStyle({ secondaryColor })}
+                                                value={color.secondaryColor}
+                                                onChange={(secondaryColor) => setColorStyle({ secondaryColor })}
                                             />
                                         </ItemActions>
                                     </Item>
@@ -500,7 +549,6 @@ export const KeycapSettings = () => {
                                 value={[border.radius]}
                                 onValueChange={(value) => setBorderStyle({ radius: value[0] })}
                                 className="w-40 h-8 mx-2"
-                                disabled={!border.enabled}
                             />
                             <Label htmlFor="borderRadius" className="w-[4ch] font-mono text-right">{(border.radius * 100).toFixed(0)}%</Label>
                         </ItemActions>

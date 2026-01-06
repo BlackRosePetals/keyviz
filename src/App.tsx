@@ -1,9 +1,10 @@
 import "./App.css";
 
 import { Suspense, lazy } from "react";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Route, Routes } from "react-router-dom";
 import { ThemeProvider } from "./components/theme-provider";
-import Visualization from "./pages/visualization";
+import { Toaster } from "./components/ui/sonner";
+import { Visualization } from "./pages/visualization";
 
 const Settings = lazy(() => import("./pages/settings"));
 
@@ -13,7 +14,12 @@ function App() {
       <Suspense fallback={<div>Loading...</div>}>
         <Routes>
           <Route path="/" element={<Visualization />} />
-          <Route path="/settings" element={<ThemeProvider><Settings /></ThemeProvider>} />
+          <Route path="/settings" element={
+            <ThemeProvider>
+              <Settings />
+              <Toaster position="bottom-right" />
+            </ThemeProvider>
+          } />
         </Routes>
       </Suspense>
     </HashRouter>

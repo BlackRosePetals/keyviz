@@ -2,12 +2,15 @@ import { keymaps } from "@/lib/keymaps";
 import { useKeyStyle } from "@/stores/key_style";
 import type { KeycapProps } from ".";
 import { easeInOutExpo } from "@/lib/utils";
+import { motion } from "motion/react";
 
-export const MinimalKeycap = ({ keyData, isPressed }: KeycapProps) => {
-    const { text, container, modifier } = useKeyStyle();
-    
-    const display = keymaps[keyData.name];
-    const color = keyData.isModifier() && modifier.highlight ? modifier.textColor : text.color;
+export const MinimalKeycap = ({ event, isPressed }: KeycapProps) => {
+    const text = useKeyStyle((state) => state.text);
+    const modifier = useKeyStyle((state) => state.modifier);
+    const layout = useKeyStyle((state) => state.layout);
+
+    const display = keymaps[event.name];
+    const color = event.isModifier() && modifier.highlight ? modifier.textColor : text.color;
     const textStyle: React.CSSProperties = {
         color,
         lineHeight: 1.2,
@@ -22,10 +25,10 @@ export const MinimalKeycap = ({ keyData, isPressed }: KeycapProps) => {
 
     let child = <>{label}</>;
 
-    if (keyData.isModifier() && container.showIcon && display.icon) {
+    if (event.isModifier() && layout.showIcon && display.icon) {
         const Icon = display.icon;
-        if (modifier.textVariant === "icon" || keyData.isArrow()) {
-            child = <Icon color={color} size={text.size} />;
+        if (modifier.textVariant === "icon" || event.isArrow()) {
+            child = <Icon color={color} size={text.size * 0.8} />;
         } else {
             child = <>
                 <Icon color={color} size={text.size} />
@@ -39,7 +42,7 @@ export const MinimalKeycap = ({ keyData, isPressed }: KeycapProps) => {
     return (
         <motion.div
             animate={{ scale: isPressed ? 0.95 : 1 }}
-            transition={{ ease: easeInOutExpo }}
+            transition={{ ease: easeInOutExpo, duration: 0.1 }}
             className="flex items-center"
             style={textStyle}
         >

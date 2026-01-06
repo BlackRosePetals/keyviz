@@ -4,13 +4,16 @@ import type { KeycapProps } from ".";
 import { KeycapBase } from "./base";
 import { easeInOutExpo } from "@/lib/utils";
 
-export const ElevatedKeycap = ({ keyData, isPressed }: KeycapProps) => {
-    const { container, text, border, modifier } = useKeyStyle();
+export const ElevatedKeycap = ({ event, isPressed }: KeycapProps) => {
+    const color = useKeyStyle((state) => state.color);
+    const text = useKeyStyle((state) => state.text);
+    const border = useKeyStyle((state) => state.border);
+    const modifier = useKeyStyle((state) => state.modifier);
 
-    const bgColor = keyData.isModifier() && modifier.highlight ? modifier.color : container.color;
-    const secondaryColor = keyData.isModifier() && modifier.highlight ? modifier.secondaryColor : container.secondaryColor;
-    const textColor = keyData.isModifier() && modifier.highlight ? modifier.textColor : text.color;
-    const borderColor = keyData.isModifier() && modifier.highlight ? modifier.borderColor : border.color;
+    const bgColor = event.isModifier() && modifier.highlight ? modifier.color : color.color;
+    const secondaryColor = event.isModifier() && modifier.highlight ? modifier.secondaryColor : color.secondaryColor;
+    const textColor = event.isModifier() && modifier.highlight ? modifier.textColor : text.color;
+    const borderColor = event.isModifier() && modifier.highlight ? modifier.borderColor : border.color;
 
     return (
         <div
@@ -22,7 +25,7 @@ export const ElevatedKeycap = ({ keyData, isPressed }: KeycapProps) => {
         >
             <motion.div
                 animate={{ y: isPressed ? text.size * 0.25 : 0 }}
-                transition={{ ease: easeInOutExpo }}
+                transition={{ ease: easeInOutExpo, duration: 0.1 }}
                 style={{
                     zIndex: 2,
                     position: "relative",
@@ -36,16 +39,16 @@ export const ElevatedKeycap = ({ keyData, isPressed }: KeycapProps) => {
 
                     borderStyle: "solid",
                     borderWidth: border.enabled ? border.width : 0,
-                    borderColor: container.useGradient ? "transparent" : borderColor,
+                    borderColor: color.useGradient ? "transparent" : borderColor,
                     borderRadius: border.radius * (text.size * 1.25),
 
-                    background: container.useGradient
+                    background: color.useGradient
                         ? `linear-gradient(oklch(from ${bgColor} clamp(0, calc(l + 0.2), 1) c h), ${bgColor}) padding-box, 
                            linear-gradient(oklch(from ${borderColor} clamp(0, calc(l + 0.4), 1) c h), oklch(from ${borderColor} clamp(0, calc(l + 0.2), 1) c h), ${borderColor}) border-box`
                         : bgColor,
                 }}
             >
-                <KeycapBase keyData={keyData} />
+                <KeycapBase event={event} />
             </motion.div>
             <div
                 style={{
@@ -59,7 +62,7 @@ export const ElevatedKeycap = ({ keyData, isPressed }: KeycapProps) => {
                     borderColor: borderColor,
                     borderRadius: border.radius * (text.size * 1.25),
 
-                    background: container.useGradient
+                    background: color.useGradient
                         ? `linear-gradient(oklch(from ${secondaryColor} clamp(0, calc(l - 0.2), 1) c h) 70%, ${secondaryColor} 100%)`
                         : secondaryColor,
                 }}

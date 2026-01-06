@@ -1,11 +1,10 @@
 import { ColorInput } from "@/components/ui/color-picker";
 import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item";
 import { NumberInput } from "@/components/ui/number-input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useKeyEvent } from "@/stores/key_event";
 import { useKeyStyle } from '@/stores/key_style';
-import { Cursor01Icon, CursorCircleSelection01Icon, CursorMagicSelection03FreeIcons, CursorPointer01Icon, Drag03Icon, KeyboardIcon, PaintBoardIcon } from "@hugeicons/core-free-icons";
+import { Cursor01Icon, CursorCircleSelection01Icon, CursorInfo01Icon, CursorMagicSelection03FreeIcons, Drag03Icon, KeyboardIcon, PaintBoardIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 
@@ -25,16 +24,16 @@ export const MouseSettings = () => {
         <Item variant="muted">
             <ItemContent>
                 <ItemTitle>
-                    <HugeiconsIcon icon={CursorMagicSelection03FreeIcons} size="1em" /> Show Clicks
+                    <HugeiconsIcon icon={CursorMagicSelection03FreeIcons} size="1em" /> Highlight Clicks
                 </ItemTitle>
                 <ItemDescription>
-                    Visualize clicks when a mouse button is pressed
+                    Animate a ring upon mouse press
                 </ItemDescription>
             </ItemContent>
             <ItemActions>
                 <Switch
                     checked={mouse.showClicks}
-                    onCheckedChange={(showClicks) => setMouseStyle({ showClicks, keepHighlight: false })}
+                    onCheckedChange={(showClicks) => setMouseStyle({ showClicks })}
                 />
             </ItemActions>
         </Item>
@@ -42,17 +41,17 @@ export const MouseSettings = () => {
         <Item variant="muted">
             <ItemContent>
                 <ItemTitle>
-                    <HugeiconsIcon icon={Cursor01Icon} size="1em" /> Keep Highlight
+                    <HugeiconsIcon icon={Cursor01Icon} size="1em" /> Always Highlight
                 </ItemTitle>
                 <ItemDescription>
-                    Show the highlight around the cursor all time
+                    Permanently show the ring and/or button indicators
                 </ItemDescription>
             </ItemContent>
             <ItemActions>
                 <Switch
                     checked={mouse.keepHighlight}
                     onCheckedChange={(keepHighlight) => setMouseStyle({ keepHighlight })}
-                    disabled={!mouse.showClicks}
+                    disabled={!mouse.showClicks && !mouse.showIndicator}
                 />
             </ItemActions>
         </Item>
@@ -72,7 +71,6 @@ export const MouseSettings = () => {
                     className="w-32 h-8"
                     value={mouse.size}
                     onChange={(size) => setMouseStyle({ size })}
-                    isDisabled={!mouse.showClicks}
                 />
             </ItemActions>
         </Item>
@@ -89,6 +87,23 @@ export const MouseSettings = () => {
                     value={mouse.color}
                     onChange={(color) => setMouseStyle({ color })}
                     disabled={!mouse.showClicks}
+                />
+            </ItemActions>
+        </Item>
+
+        <Item variant="muted">
+            <ItemContent>
+                <ItemTitle>
+                    <HugeiconsIcon icon={CursorInfo01Icon} size="1em" /> Button Indicators
+                </ItemTitle>
+                <ItemDescription>
+                    Display scroll and button icons next to the cursor
+                </ItemDescription>
+            </ItemContent>
+            <ItemActions>
+                <Switch
+                    checked={mouse.showIndicator}
+                    onCheckedChange={(showIndicator) => setMouseStyle({ showIndicator })}
                 />
             </ItemActions>
         </Item>

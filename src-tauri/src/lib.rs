@@ -5,11 +5,11 @@ use tauri::{
     include_image,
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
-    Manager, WebviewWindowBuilder,
+    Emitter, Manager, WebviewWindowBuilder,
 };
 
 mod app;
-use app::commands::{log, set_toggle_shortcut};
+use app::commands::{log, set_main_window_monitor, set_toggle_shortcut};
 use app::event::start_listener;
 use app::state::{AppState, KeyEventStore};
 use tauri_plugin_store::StoreExt;
@@ -17,6 +17,8 @@ use tauri_plugin_store::StoreExt;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
@@ -101,6 +103,8 @@ pub fn run() {
                             .maximizable(false)
                             .build()
                             .unwrap();
+
+                        app.emit_to("main", "settings-window", true).unwrap();
                     }
                     "quit" => std::process::exit(0),
                     _ => println!("um... what?"),
@@ -109,7 +113,25 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![log, set_toggle_shortcut])
+        .on_window_event(|window, event| {
+            if window.label() != "settings" {
+                return;
+            }
+            match event {
+                tauri::WindowEvent::CloseRequested { .. } => {
+                    window
+                        .app_handle()
+                        .emit_to("main", "settings-window", false)
+                        .unwrap();
+                }
+                _ => {}
+            }
+        })
+        .invoke_handler(tauri::generate_handler![
+            log,
+            set_toggle_shortcut,
+            set_main_window_monitor
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

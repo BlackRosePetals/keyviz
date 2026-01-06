@@ -3,24 +3,32 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { tauriStorage } from "./storage";
 import { createSyncedStore } from "./sync";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { open, save } from "@tauri-apps/plugin-dialog";
+import { toast } from "sonner";
 
 export const KEY_STYLE_STORE = "key_style_store";
 
 export interface AppearanceSettings {
+    monitor: string | null;
     flexDirection: "row" | "column";
     alignment: Alignment;
     marginX: number;
     marginY: number;
     animation: "none" | "fade" | "zoom" | "float" | "slide";
     animationDuration: number;
+    style: "minimal" | "flat" | "elevated" | "plastic";
 }
 
-export interface ContainerSettings {
-    style: "minimal" | "flat" | "elevated" | "plastic";
-    color: string;
-    secondaryColor: string;
+export interface LayoutSettings {
     showIcon: boolean;
     showSymbol: boolean;
+    iconAlignment: "flex-start" | "center" | "flex-end";
+}
+
+export interface ColorSettings {
+    color: string;
+    secondaryColor: string;
     useGradient: boolean;
 }
 
@@ -54,6 +62,7 @@ export interface BackgroundSettings {
 
 export interface MouseSettings {
     showClicks: boolean;
+    showIndicator: boolean;
     keepHighlight: boolean;
     size: number;
     color: string;
@@ -61,7 +70,8 @@ export interface MouseSettings {
 
 export interface KeyStyleState {
     appearance: AppearanceSettings;
-    container: ContainerSettings;
+    layout: LayoutSettings;
+    color: ColorSettings;
     modifier: ModifierSettings;
     text: TextSettings;
     border: BorderSettings;
@@ -71,75 +81,149 @@ export interface KeyStyleState {
 
 interface KeyStyleActions {
     setAppearance: (appearance: Partial<AppearanceSettings>) => void;
-    setContainer: (container: Partial<ContainerSettings>) => void;
+    setLayout: (layout: Partial<LayoutSettings>) => void;
+    setColor: (color: Partial<ColorSettings>) => void;
     setModifier: (modifier: Partial<ModifierSettings>) => void;
     setText: (text: Partial<TextSettings>) => void;
     setBorder: (border: Partial<BorderSettings>) => void;
     setBackground: (background: Partial<BackgroundSettings>) => void;
     setMouse: (mouse: Partial<MouseSettings>) => void;
+    import: () => Promise<void>;
+    export: () => Promise<void>;
 }
 
 export type KeyStyleStore = KeyStyleState & KeyStyleActions;
 
 const createKeyStyleStore = createSyncedStore<KeyStyleStore>(
     KEY_STYLE_STORE,
-    (set) => ({
+    (set, get) => ({
         appearance: {
+            monitor: null,
             flexDirection: "column",
             alignment: "bottom-center",
-            marginX: 5,
-            marginY: 5,
+            marginX: 0,
+            marginY: 150,
             animation: "fade",
-            motionBlur: true,
-            animationDuration: 0.2,
+            animationDuration: 0.25,
+            style: "plastic",
         },
-        container: {
-            style: "elevated",
-            color: "#ffffffff",
-            secondaryColor: "#000000ff",
+        layout: {
             showIcon: true,
             showSymbol: true,
-            useGradient: false,
+            iconAlignment: "flex-end",
+        },
+        color: {
+            color: "#404040",
+            secondaryColor: "#2e2e2e",
+            useGradient: true,
         },
         modifier: {
-            highlight: true,
-            color: "#ff0000ff",
-            secondaryColor: "#990000ff",
-            textColor: "#ffffffff",
+            highlight: false,
+            color: "#606060",
+            secondaryColor: "#4b4b4b",
+            textColor: "#f8f8f8",
             textVariant: "text-short",
-            borderColor: "#990000ff",
+            borderColor: "#000000ff",
         },
         text: {
-            size: 24,
-            color: "#000000ff",
+            size: 32,
+            color: "#ffffff",
             caps: "capitalize",
             alignment: "bottom-center",
         },
         border: {
             enabled: true,
-            width: 1,
+            width: 2,
             color: "#000000ff",
-            radius: 0.45,
+            radius: 0.5,
         },
         background: {
             enabled: true,
-            color: "#ffffff80",
+            color: "#ffffff99",
         },
         mouse: {
-            showClicks: true,
-            keepHighlight: false,
+            showClicks: false,
+            showIndicator: true,
+            keepHighlight: true,
             showEvents: true,
             size: 150,
-            color: "#0000ffff",
+            color: "#90d5ff",
         },
 
         setAppearance: (appearance) => set((state) => ({ appearance: { ...state.appearance, ...appearance } })),
-        setContainer: (container) => set((state) => ({ container: { ...state.container, ...container } })),
+        setLayout: (layout) => set((state) => ({ layout: { ...state.layout, ...layout } })),
+        setColor: (color) => set((state) => ({ color: { ...state.color, ...color } })),
         setModifier: (modifier) => set((state) => ({ modifier: { ...state.modifier, ...modifier } })),
         setText: (text) => set((state) => ({ text: { ...state.text, ...text } })),
         setBorder: (border) => set((state) => ({ border: { ...state.border, ...border } })),
         setBackground: (background) => set((state) => ({ background: { ...state.background, ...background } })),
         setMouse: (mouse) => set((state) => ({ mouse: { ...state.mouse, ...mouse } })),
+
+        import: async () => {
+            try {
+                const filePath = await open({
+                    multiple: false,
+                    filters: [{
+                        name: 'JSON Files',
+                        extensions: ['json']
+                    }]
+                });
+                if (!filePath || typeof filePath !== 'string') return;
+
+                const content = await readTextFile(filePath);
+                const parsedData: KeyStyleState = JSON.parse(content);
+
+                if (
+                    !parsedData.appearance || !parsedData.layout || !parsedData.color ||
+                    !parsedData.modifier || !parsedData.text || !parsedData.border ||
+                    !parsedData.background || !parsedData.mouse
+                ) {
+                    toast.warning("Invalid file format", { description: filePath });
+                    return;
+                }
+                set(() => ({
+                    appearance: parsedData.appearance,
+                    layout: parsedData.layout,
+                    color: parsedData.color,
+                    modifier: parsedData.modifier,
+                    text: parsedData.text,
+                    border: parsedData.border,
+                    background: parsedData.background,
+                    mouse: parsedData.mouse,
+                }));
+                toast.success("Imported successfully", { description: filePath });
+            } catch (err) {
+                toast.error("Error importing file", {
+                    description: err instanceof Error ? err.message : String(err),
+                })
+            }
+        },
+        export: async () => {
+            const state = get();
+            const exportData: KeyStyleState = {
+                appearance: state.appearance,
+                layout: state.layout,
+                color: state.color,
+                modifier: state.modifier,
+                text: state.text,
+                border: state.border,
+                background: state.background,
+                mouse: state.mouse,
+            };
+            try {
+                const filePath = await save({
+                    defaultPath: "key_style.json",
+                    filters: [{ name: "JSON Files", extensions: ["json"] }],
+                });
+                if (!filePath) return;
+                await writeTextFile(filePath, JSON.stringify(exportData, null, 2));
+                toast.success("Exported successfully", { description: filePath });
+            } catch (err) {
+                toast.error("Error exporting file", {
+                    description: err instanceof Error ? err.message : String(err),
+                })
+            }
+        }
     }),
     (config) => persist(config, {
         name: KEY_STYLE_STORE,

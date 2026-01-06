@@ -6,7 +6,7 @@ import { MinimalKeycap } from "./minimal";
 import { PlasticKeycap } from "./plastic";
 
 export interface KeycapProps {
-    keyData: KeyEvent;
+    event: KeyEvent;
     isPressed: boolean;
 }
 
@@ -18,7 +18,7 @@ const components = {
 } as const;
 
 export const Keycap = (props: KeycapProps) => {
-    const style = useKeyStyle(state => state.container.style);
+    const style = useKeyStyle(state => state.appearance.style);
     const KeycapComponent = components[style];
     
     return <KeycapComponent {...props} />;

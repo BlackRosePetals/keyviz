@@ -6,7 +6,6 @@ import { SidebarItem } from "@/components/ui/sidebar-item";
 import { ComputerIcon, InformationSquareIcon, KeyboardIcon, Mouse09Icon, Settings03Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
 
-
 const sideBar = [
     { title: "General", icon: Settings03Icon },
     { title: "Appearance", icon: ComputerIcon },

@@ -9,6 +9,11 @@ export const KEY_EVENT_STORE = "key_event_store";
 const SCROLL_LINGER_MS = 300;
 const MIN_CLICK_DISPLAY_MS = 200;
 
+interface KeyGroup {
+    keys: KeyEvent[];
+    timestamp: number;
+}
+
 interface KeyEventState {
     // ───────────── physical state ─────────────
     pressedKeys: string[];
@@ -23,7 +28,8 @@ interface KeyEventState {
         dragging: boolean;
     };
     // ───────────── visual state ─────────────
-    groups: KeyEvent[][];
+    isStyling: boolean;
+    groups: KeyGroup[];
     showMouseClicked: boolean;
     // ───────────── config ─────────────
     dragThreshold: number;
@@ -38,6 +44,7 @@ interface KeyEventState {
 
 interface KeyEventActions {
     // ───────────── setters ─────────────
+    setIsStyling(value: boolean): void;
     setDragThreshold(value: number): void;
     setFilterHotkeys(value: boolean): void;
     setIgnoreModifiers(modifiers: string[]): void;
@@ -66,9 +73,8 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
         pressedKeys: <string[]>[],
         pressedMouseButton: null,
         mouse: { x: 0, y: 0, wheel: 0, dragging: false },
-        groups: [ //!test
-            [new KeyEvent(RawKey.ControlLeft), new KeyEvent(RawKey.KeyA), new KeyEvent(RawKey.Num0)],
-        ],
+        groups: <KeyGroup[]>[],
+        isStyling: false,
         showMouseClicked: false,
         dragThreshold: 50,
         filterHotkeys: true,
@@ -79,6 +85,9 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
         showMouseEvents: true,
         toggleShortcut: [RawKey.ShiftLeft, RawKey.F10],
 
+        setIsStyling(value) {
+            set({ isStyling: value });
+        },
         setDragThreshold(value: number) {
             set({ dragThreshold: value });
         },
@@ -149,28 +158,33 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
             const key = new KeyEvent(event.name);
 
             // 2. check if pressed again
-            const existingKey = last >= 0 ? groups[last].find(gKey => gKey.name === key.name) : undefined;
+            const existingKey = last >= 0 ? groups[last].keys.find(gKey => gKey.name === key.name) : undefined;
             if (existingKey) {
                 // history mode, add new group
-                if (state.showEventHistory && groups[last].length > 1) {
-                    const group = groups[last].filter(gKey => gKey.in(pressedKeys));
-                    groups.push(group);
+                if (state.showEventHistory && groups[last].keys.length > 1) {
+                    const groupKeys: KeyEvent[] = [];
+                    groups[last].keys.forEach(gKey => {
+                        if (gKey.in(pressedKeys)) {
+                            groupKeys.push(new KeyEvent(gKey.name));
+                        }
+                    });
+                    groups.push({ keys: groupKeys, timestamp: Date.now() });
                 }
                 // replace mode, only currently pressed keys
                 // or
                 // history mode, last group has only this key
                 else {
-                    let group = <KeyEvent[]>[];
-                    groups[last].forEach(gKey => {
+                    let groupKeys = <KeyEvent[]>[];
+                    groups[last].keys.forEach(gKey => {
                         if (gKey.name === key.name) {
                             // update existing key's pressed count and time
                             existingKey.press();
-                            group.push(existingKey);
+                            groupKeys.push(existingKey);
                         } else if (gKey.in(pressedKeys)) {
-                            group.push(gKey);
+                            groupKeys.push(gKey);
                         }
                     });
-                    groups[last] = group;
+                    groups[last].keys = groupKeys;
                 }
             }
             // 3. add to group
@@ -178,20 +192,20 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
                 // add new group
                 if (pressedKeys.length === 1 || last < 0) {
                     if (state.showEventHistory) {
-                        groups.push([key]);
+                        groups.push({ keys: [key], timestamp: Date.now() });
                     } else {
-                        groups = [[key]];
+                        groups = [{ keys: [key], timestamp: Date.now() }];
                     }
                 }
                 // key combination
                 else {
-                    if (state.showEventHistory && groups[last].some(gKey => !gKey.in(pressedKeys))) {
+                    if (state.showEventHistory && groups[last].keys.some(gKey => !gKey.in(pressedKeys))) {
                         // history mode, partial combination, add new group
-                        const group = groups[last].filter(gKey => gKey.in(pressedKeys));
-                        group.push(key);
-                        groups.push(group);
+                        const groupKeys = groups[last].keys.filter(gKey => gKey.in(pressedKeys));
+                        groupKeys.push(key);
+                        groups.push({ keys: groupKeys, timestamp: Date.now() });
                     } else {
-                        groups[last].push(key);
+                        groups[last].keys.push(key);
                     }
                 }
             }
@@ -221,9 +235,9 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
             const groups = [...state.groups];
             const last = groups.length - 1;
 
-            const kIndex = last >= 0 ? groups[last].findIndex(key => key.name === event.name) : undefined;
+            const kIndex = last >= 0 ? groups[last].keys.findIndex(key => key.name === event.name) : undefined;
             if (kIndex && kIndex >= 0) {
-                groups[last][kIndex].lastPressedAt = Date.now();
+                groups[last].keys[kIndex].lastPressedAt = Date.now();
                 set({ pressedKeys, groups });
             } else {
                 set({ pressedKeys });
@@ -251,7 +265,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
                     const groups = [...state.groups];
                     const last = groups.length - 1;
                     if (last >= 0) {
-                        groups[last] = groups[last].filter(key => key.name !== state.pressedMouseButton?.toString());
+                        groups[last].keys = groups[last].keys.filter(key => key.name !== state.pressedMouseButton?.toString());
                     }
 
                     set({ pressedKeys, mouse, groups });
@@ -335,8 +349,9 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
             const now = Date.now();
             let notify = false;
 
-            const groups = <KeyEvent[][]>[];
+            const groups = <KeyGroup[]>[];
 
+            // hide mouse click visualization after delay
             if (
                 !state.pressedMouseButton
                 && state.lastMouseButtonPressAt
@@ -344,15 +359,20 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
             ) {
                 set({ showMouseClicked: false, lastMouseButtonPressAt: undefined });
             }
-
+            
+            // handle scroll linger
             if (state.mouse.lastScrollAt && now - state.mouse.lastScrollAt > SCROLL_LINGER_MS) {
                 // simulate scroll key release
                 state.onKeyRelease({ type: "KeyEvent", name: "Scroll", pressed: false });
                 set({ mouse: { ...state.mouse, wheel: 0, lastScrollAt: undefined } });
             }
 
+            // don't remove keys while styling
+            if (state.isStyling) return;
+
+            // remove keys that have exceeded linger duration
             for (const group of state.groups) {
-                const updatedGroup = group.filter((key) => {
+                const updatedKeys = group.keys.filter((key) => {
                     // keep key if
                     return (
                         // is pressed
@@ -361,11 +381,11 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
                         now - key.lastPressedAt < state.lingerDurationMs
                     );
                 })
-                if (updatedGroup.length !== group.length) {
+                if (updatedKeys.length !== group.keys.length) {
                     notify = true;
                 }
-                if (updatedGroup.length > 0) {
-                    groups.push(updatedGroup);
+                if (updatedKeys.length > 0) {
+                    groups.push({ keys: updatedKeys, timestamp: group.timestamp });
                 }
             }
 

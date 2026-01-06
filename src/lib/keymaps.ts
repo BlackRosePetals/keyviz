@@ -1,4 +1,4 @@
-import { ArrowBigUpDashIcon, ArrowBigUpIcon, ArrowDownIcon, ArrowDownToLineIcon, ArrowLeftIcon, ArrowLeftRightIcon, ArrowRightIcon, ArrowRightToLineIcon, ArrowUpIcon, ArrowUpToLineIcon, ChevronUpIcon, CircleArrowOutUpLeftIcon, CommandIcon, CornerDownLeftIcon, DeleteIcon, Grid2X2Icon, ImageIcon, LockIcon, LucideIcon, MouseIcon, MoveDiagonal, MoveDownRightIcon, MoveUpLeftIcon, OptionIcon, PauseIcon, SpaceIcon, SparkleIcon } from "lucide-react";
+import { ArrowBigUpDashIcon, ArrowBigUpIcon, ArrowDownIcon, ArrowDownToLineIcon, ArrowLeftIcon, ArrowLeftRightIcon, ArrowRightIcon, ArrowRightToLineIcon, ArrowUpIcon, ArrowUpToLineIcon, ChevronUpIcon, CircleArrowOutUpLeftIcon, CommandIcon, CornerDownLeftIcon, DeleteIcon, Grid2X2Icon, ImageIcon, LockIcon, LucideIcon, MouseIcon, MoveDiagonal, MoveDownRightIcon, MoveUpLeftIcon, OptionIcon, PauseIcon, SpaceIcon, SparkleIcon, Volume2Icon, VolumeXIcon } from "lucide-react";
 
 import { platform } from "@tauri-apps/plugin-os";
 
@@ -155,7 +155,7 @@ export const keymaps: Record<string, DisplayData> = {
     },
     ScrollLock: {
         label: "scroll lock",
-        symbol: "🖱",
+        glyph: "🖱",
         icon: MouseIcon,
     },
     NumLock: {
@@ -291,7 +291,7 @@ export const keymaps: Record<string, DisplayData> = {
     KpComma: { label: "," },
     KpReturn: {
         label: "Enter",
-        glyph: "⏎",
+        glyph: "↩",
     },
     KpDecimal: {
         label: ".",
@@ -341,13 +341,16 @@ export const keymaps: Record<string, DisplayData> = {
     VolumeUp: {
         label: "volume up",
         shortLabel: "vol +",
+        icon: Volume2Icon,
     },
     VolumeDown: {
         label: "volume down",
         shortLabel: "vol -",
+        icon: Volume2Icon,
     },
     VolumeMute: {
         label: "mute",
+        icon: VolumeXIcon,
     },
 
     // ───────────── Mouse Events ─────────────
@@ -394,18 +397,18 @@ export const keymaps: Record<string, DisplayData> = {
     keymaps[key] = switchPlatform({
         windows: {
             label: "win",
-            symbol: "\u229E",
+            glyph: "\u229E",
             icon: Grid2X2Icon,
         },
         macos: {
             label: "command",
             shortLabel: "cmd",
-            symbol: "⌘",
+            glyph: "⌘",
             icon: CommandIcon,
         },
         linux: {
             label: "Meta",
-            symbol: "✦",
+            glyph: "✦",
             icon: SparkleIcon,
         },
     });

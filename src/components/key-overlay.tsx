@@ -13,10 +13,37 @@ const fadeVariants: Variants = {
 }
 
 export const KeyOverlay = () => {
-    const { pressedKeys, groups } = useKeyEvent();
-    const { appearance, container, text, border, background } = useKeyStyle();
+    const pressedKeys = useKeyEvent(state => state.pressedKeys);
+    const groups = useKeyEvent(state => state.groups);
+
+    const appearance = useKeyStyle(state => state.appearance);
+    const text = useKeyStyle(state => state.text);
+    const border = useKeyStyle(state => state.border);
+    const background = useKeyStyle(state => state.background);
 
     const alignment = alignmentForColumn[appearance.alignment];
+
+    const containerStyle = {
+        flexDirection: appearance.flexDirection,
+        paddingBlock: appearance.marginY,
+        paddingInline: appearance.marginX,
+        alignItems: alignment.alignItems,
+        justifyContent: alignment.justifyContent,
+        gap: text.size * 0.5,
+    };
+
+    const groupStyle = {
+        display: "flex",
+        columnGap: appearance.style === "minimal" ? text.size * 0.15 : text.size * 0.3,
+        ...(background.enabled && {
+            paddingInline: text.size * 0.4,
+            paddingBlock: appearance.style === "minimal" ? text.size * 0.25 : text.size * 0.4,
+            background: background.color,
+            borderRadius: border.radius * (text.size * 1.75),
+        }),
+    }
+
+    const layoutAnimation = appearance.animation === "none" ? false : "position";
 
     const variants = useMemo<Variants>(() => {
         switch (appearance.animation) {
@@ -46,49 +73,40 @@ export const KeyOverlay = () => {
     }, [appearance.animation, text.size]);
 
     return (
-        <div className="flex w-full h-full justify-end items-center" style={{
-            flexDirection: appearance.flexDirection,
-            paddingBlock: appearance.marginY,
-            paddingInline: appearance.marginX,
-            alignItems: alignment.alignItems,
-            justifyContent: alignment.justifyContent,
-            position: "relative",
-        }}>
+        <div className="w-full h-full flex" style={containerStyle}>
             <AnimatePresence>
                 {groups.map((group, index) => (
                     <motion.div
-                        key={index}
+                        key={group.timestamp}
+                        layout={layoutAnimation}
                         variants={appearance.animation === "none" ? {} : fadeVariants}
                         initial="hidden"
                         animate="visible"
                         exit="hidden"
-                        style={{
-                            display: "flex",
-                            columnGap: container.style === "minimal" ? text.size * 0.15 : text.size * 0.25,
-                            padding: text.size * 0.4,
-                            background: background.color,
-                            borderRadius: border.radius * (text.size * 1.75),
-                        }}
-                        className="overflow-hidden"
+                        style={groupStyle}
+                        className={background.enabled ? "overflow-hidden" : ""}
                         transition={{ ease: [easeOutQuint, easeInQuint], duration: appearance.animationDuration }}
                     >
                         <AnimatePresence>
-                            {group.map(key => (
+                            {group.keys.map(event => (
                                 <motion.div
-                                    key={key.name}
+                                    key={event.name}
+                                    layout={layoutAnimation}
                                     variants={variants}
                                     initial="hidden"
                                     animate="visible"
                                     exit="hidden"
+                                    
                                     transition={{
                                         ease: [easeOutQuint, easeInQuint],
-                                        duration: appearance.animationDuration
+                                        duration: appearance.animationDuration,
+                                        layout: { duration: appearance.animationDuration / 3, ease: easeOutQuint },
                                     }}
-                                    className="cursor-pointer"
+                                    className="cursor-pointer flex items-center"
                                 >
                                     <Keycap
-                                        keyData={key}
-                                        isPressed={groups.length - 1 === index && key.in(pressedKeys)}
+                                        event={event}
+                                        isPressed={groups.length - 1 === index && event.in(pressedKeys)}
                                     />
                                 </motion.div>
                             ))}

@@ -10,26 +10,32 @@ import { useKeyEvent } from "@/stores/key_event";
 import { useKeyStyle } from "@/stores/key_style";
 import { ComputerIcon, KeyframesDoubleIcon, KeyframesDoubleRemoveIcon, Link02Icon, ParagraphSpacingIcon, TextAlignLeftIcon, Time03Icon, Unlink02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { availableMonitors, Monitor } from "@tauri-apps/api/window";
+import { availableMonitors, getAllWindows, Monitor } from "@tauri-apps/api/window";
 
 
 export const AppearanceSettings = () => {
-    const [marginLinked, setMarginLinked] = useState(true);
-    const [monitors, setMonitors] = useState<Monitor[]>([]);
-
+    
     const appearance = useKeyStyle(state => state.appearance);
     const setAppearance = useKeyStyle(state => state.setAppearance);
-
+    
     const lingerDurationMs = useKeyEvent(state => state.lingerDurationMs);
     const setLingerDurationMs = useKeyEvent(state => state.setLingerDurationMs);
 
+    const [marginLinked, setMarginLinked] = useState(appearance.marginX === appearance.marginY);
+    const [monitors, setMonitors] = useState<Monitor[]>([]);
+
     useEffect(() => {
-        availableMonitors().then(monitors => setMonitors(monitors));
+        availableMonitors().then(monitors => {
+            if (!appearance.monitor && monitors.length > 1) {
+                setAppearance({ monitor: monitors[0].name });
+            }
+            setMonitors(monitors);
+        });
     }, []);
 
     return <div className="flex flex-col gap-y-4 p-6">
         <h1 className="text-xl font-semibold">Appearance</h1>
-        
+
         {
             monitors.length > 1 &&
             <Item variant="muted">
@@ -43,7 +49,19 @@ export const AppearanceSettings = () => {
                     </ItemDescription>
                 </ItemContent>
                 <ItemActions>
-                    <Select>
+                    <Select
+                        value={appearance.monitor ?? ""}
+                        onValueChange={(value) => {
+                            getAllWindows().then(windows => {
+                                const window = windows.find(w => w.label === "main");
+                                const monitor = monitors.find(m => m.name === value);
+                                if (monitor && window) {
+                                    window.setPosition(monitor.position);
+                                }
+                            });
+                            setAppearance({ monitor: value });
+                        }}
+                    >
                         <SelectTrigger className="w-32">
                             <SelectValue placeholder="Select Display" />
                         </SelectTrigger>
@@ -141,6 +159,7 @@ export const AppearanceSettings = () => {
                     value={lingerDurationMs / 1000}
                     onChange={(value) => setLingerDurationMs(value * 1000)}
                     step={0.2}
+                    minValue={0}
                     className="w-32 h-8"
                 />
             </ItemActions>
