@@ -46,15 +46,9 @@ export const MouseOverlay = () => {
                 // positionRef.current.style.opacity = '0'; 
                 return;
             }
-
-            const scaleFactor = monitor.scaleFactor;
-
-            // Convert Physical -> Logical
-            const logicX = (x - monitor.position.x) / scaleFactor;
-            const logicY = (y - monitor.position.y) / scaleFactor;
-
+            
             positionRef.current!.style.transform =
-                `translate3d(${logicX}px, ${logicY}px, 0) translate(-50%, -50%)`;
+                `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
         });
 
         return () => unsubscribe();
@@ -84,13 +78,13 @@ export const MouseOverlay = () => {
                         initial={false}
                         animate={{
                             opacity: isVisible ? 1 : 0,
-                            scale: isPressed ? 0.6 : 1.0,
+                            scale: isPressed ? 0.5 : 1.0,
+                            borderWidth: style.size / 20,
                         }}
                         style={{
                             borderColor: style.color,
                             borderStyle: "solid",
                             borderRadius: "50%",
-                            borderWidth: style.size / 15,
                         }}
                         transition={{
                             duration: animationDuration,

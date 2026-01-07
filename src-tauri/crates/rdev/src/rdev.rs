@@ -244,7 +244,7 @@ pub enum Key {
     Lang3, // Japanese Katakana key.
     Lang4, // Japanese Hiragana key.
     Lang5, // Japanese Zenkaku/Hankaku (Fullwidth/halfwidth) key.
-    Function,
+    // Function, // disabled due to bug on macOS with ShortcutRecorder
     Apps,
     Cancel,
     Clear,

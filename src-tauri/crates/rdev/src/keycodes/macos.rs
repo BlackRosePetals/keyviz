@@ -95,7 +95,7 @@ decl_keycodes!(
     ShiftRight, kVK_RightShift,
     AltGr, kVK_RightOption,
     ControlRight, kVK_RightControl,
-    Function, kVK_Function,
+    // Function, kVK_Function,
     F17, kVK_F17,
     KpDecimal, kVK_ANSI_KeypadDecimal,
     KpMultiply, kVK_ANSI_KeypadMultiply,

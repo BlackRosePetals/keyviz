@@ -28,7 +28,7 @@ interface KeyEventState {
         dragging: boolean;
     };
     // ───────────── visual state ─────────────
-    isStyling: boolean;
+    settingsOpen: boolean;
     groups: KeyGroup[];
     showMouseClicked: boolean;
     // ───────────── config ─────────────
@@ -44,7 +44,6 @@ interface KeyEventState {
 
 interface KeyEventActions {
     // ───────────── setters ─────────────
-    setIsStyling(value: boolean): void;
     setDragThreshold(value: number): void;
     setFilterHotkeys(value: boolean): void;
     setIgnoreModifiers(modifiers: string[]): void;
@@ -74,20 +73,18 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
         pressedMouseButton: null,
         mouse: { x: 0, y: 0, wheel: 0, dragging: false },
         groups: <KeyGroup[]>[],
-        isStyling: false,
+        listening: true,
+        settingsOpen: false,
         showMouseClicked: false,
         dragThreshold: 50,
         filterHotkeys: true,
         ignoreModifiers: [RawKey.ShiftLeft, RawKey.ShiftRight],
-        showEventHistory: true,
+        showEventHistory: false,
         maxHistory: 5,
         lingerDurationMs: 5_000,
         showMouseEvents: true,
         toggleShortcut: [RawKey.ShiftLeft, RawKey.F10],
 
-        setIsStyling(value) {
-            set({ isStyling: value });
-        },
         setDragThreshold(value: number) {
             set({ dragThreshold: value });
         },
@@ -368,7 +365,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
             }
 
             // don't remove keys while styling
-            if (state.isStyling) return;
+            if (state.settingsOpen) return;
 
             // remove keys that have exceeded linger duration
             for (const group of state.groups) {
@@ -398,7 +395,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
         name: KEY_EVENT_STORE,
         storage: createJSONStorage(() => tauriStorage),
         partialize: (state) => {
-            const { pressedKeys, pressedMouseButton, mouse, groups, ...persistedState } = state;
+            const { pressedKeys, pressedMouseButton, mouse, groups, settingsOpen, ...persistedState } = state;
             return persistedState;
         },
     }),

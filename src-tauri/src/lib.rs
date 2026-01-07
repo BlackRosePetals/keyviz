@@ -11,8 +11,8 @@ use tauri::{
 mod app;
 use app::commands::{log, set_main_window_monitor, set_toggle_shortcut};
 use app::event::start_listener;
-use app::state::{AppState, KeyEventStore};
-use tauri_plugin_store::StoreExt;
+use app::state::AppState;
+use app::window::config_window;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -25,29 +25,12 @@ pub fn run() {
         .setup(|app| {
             // prepare window
             if let Some(window) = app.get_webview_window("main") {
-                window.set_ignore_cursor_events(true)?;
+                config_window(&window);
             }
 
             let app_handle = app.handle();
-            let mut app_state = AppState::new();
-
-            // load toggleShortcut from store if it exists
-            let store = app.store("store.json")?;
-            if let Some(value) = store.get("key_event_store") {
-                // the value comes in as a String: "{\"state\": ...}"
-                if let Some(json_str) = value.as_str() {
-                    // parse the inner string
-                    match serde_json::from_str::<KeyEventStore>(json_str) {
-                        Ok(parsed) => {
-                            app_state.toggle_shortcut = parsed.state.toggle_shortcut;
-                        }
-                        Err(e) => eprintln!("Failed to parse inner config JSON: {}", e),
-                    }
-                }
-            }
-
             // manage app state
-            app.manage(Mutex::new(app_state));
+            app.manage(Mutex::new(AppState::new(&app_handle)));
 
             // tray actions
             let toggle_item = MenuItem::with_id(app, "toggle", "Stop", true, None::<&str>)?;
@@ -58,36 +41,16 @@ pub fn run() {
             start_listener(app_handle.clone(), toggle_item.clone());
 
             // setup tray menu
-            let tray_icon = Image::from(include_image!("icons/tray.png"));
             let menu = Menu::with_items(app, &[&toggle_item, &settings_item, &quit_item])?;
             let _ = TrayIconBuilder::with_id("keyviz-tray")
-                .icon(tray_icon.clone())
+                .icon(Image::from(include_image!("icons/tray.png")))
                 .menu(&menu)
                 .show_menu_on_left_click(true)
                 .on_menu_event(move |app, event| match event.id.as_ref() {
                     "toggle" => {
                         let state = app.state::<Mutex<AppState>>();
                         let mut app_state = state.lock().unwrap();
-
-                        app_state.listening = !app_state.listening;
-
-                        if app_state.listening {
-                            println!("🟢 Listening enabled via tray menu.");
-                            toggle_item.set_text("Stop").unwrap();
-                            app.tray_by_id("keyviz-tray")
-                                .unwrap()
-                                .set_icon(Some(tray_icon.clone()))
-                                .unwrap();
-                        } else {
-                            println!("🔴 Listening disabled via tray menu.");
-                            toggle_item.set_text("Start").unwrap();
-                            app.tray_by_id("keyviz-tray")
-                                .unwrap()
-                                .set_icon(Some(Image::from(include_image!(
-                                    "icons/tray-disabled.png"
-                                ))))
-                                .unwrap();
-                        }
+                        app_state.toggle_listener(app, &toggle_item);
                     }
                     "settings" => {
                         if let Some(window) = app.get_webview_window("settings") {
@@ -101,6 +64,7 @@ pub fn run() {
                             .min_inner_size(560.0, 480.0)
                             .max_inner_size(1000.0, 800.0)
                             .maximizable(false)
+                            .always_on_top(true) // todo: remove
                             .build()
                             .unwrap();
 

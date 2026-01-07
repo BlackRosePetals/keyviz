@@ -2,7 +2,7 @@ use std::{sync::Mutex, thread};
 
 use rdev::{listen, Button, EventType};
 use serde::Serialize;
-use tauri::{image::Image, include_image, menu::MenuItem, AppHandle, Emitter, Manager, Wry};
+use tauri::{menu::MenuItem, AppHandle, Emitter, Manager, Wry};
 
 use crate::app::state::AppState;
 
@@ -56,24 +56,9 @@ pub fn start_listener(app_handle: AppHandle, toggle_menu_item: MenuItem<Wry>) {
                 app_state.pressed_keys.push(key_name);
                 // check if toggle shortcut is pressed
                 if app_state.toggle_shortcut == app_state.pressed_keys {
-                    app_state.listening = !app_state.listening;
+                    app_state.toggle_listener(&app_handle, &toggle_menu_item);
 
-                    if app_state.listening {
-                        println!("🟢 Listening enabled via shortcut.");
-                        toggle_menu_item.set_text("Stop").unwrap();
-                        app_handle
-                            .tray_by_id("keyviz-tray")
-                            .unwrap()
-                            .set_icon(Some(Image::from(include_image!("icons/tray.png"))))
-                            .unwrap();
-                    } else {
-                        toggle_menu_item.set_text("Start").unwrap();
-                        println!("🔴 Listening disabled via shortcut.");
-                        app_handle
-                            .tray_by_id("keyviz-tray")
-                            .unwrap()
-                            .set_icon(Some(Image::from(include_image!("icons/tray-disabled.png"))))
-                            .unwrap();
+                    if !app_state.listening {
                         // emit key releases for all pressed keys
                         for key_name in &app_state.pressed_keys {
                             app_handle
@@ -119,7 +104,26 @@ pub fn start_listener(app_handle: AppHandle, toggle_menu_item: MenuItem<Wry>) {
                     button: map_mouse_button(button),
                     pressed: false,
                 }),
-                EventType::MouseMove { x, y } => Some(InputEvent::MouseMoveEvent { x, y }),
+                EventType::MouseMove { x, y } => {
+                    // Convert Physical -> Logical
+                    #[cfg(target_os = "macos")]
+                    let (logical_x, logical_y) = (
+                        x - app_state.monitor_position.0 as f64,
+                        y - app_state.monitor_position.1 as f64,
+                    );
+
+                    #[cfg(not(target_os = "macos"))]
+                    let (logical_x, logical_y) = {
+                        let scale = app_state.monitor_scale;
+                        let (offset_x, offset_y) = app_state.monitor_position;
+                        ((x - offset_x as f64) / scale, (y - offset_y as f64) / scale)
+                    };
+
+                    Some(InputEvent::MouseMoveEvent {
+                        x: logical_x,
+                        y: logical_y,
+                    })
+                }
                 EventType::Wheel { delta_x, delta_y } => {
                     Some(InputEvent::MouseWheelEvent { delta_x, delta_y })
                 }

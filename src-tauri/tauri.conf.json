@@ -16,13 +16,13 @@
         "title": "Keyviz",
         "alwaysOnTop": true,
         "skipTaskbar": true,
-        "decorations": true,
+        "decorations": false,
         "titleBarStyle": "Overlay",
         "hiddenTitle": true,
         "transparent": true,
         "focus": false,
         "focusable": false,
-        "fullscreen": true
+        "visible": false
       }
     ],
     "security": {

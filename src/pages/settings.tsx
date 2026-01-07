@@ -20,10 +20,10 @@ const Settings = () => {
         <div className="flex w-screen h-screen overflow-hidden border-t bg-background">
             <div className="w-44 p-2 flex flex-col gap-y-1 rounded-xl">
                 <div className="flex items-center m-2 mb-2 gap-x-2">
-                    <img src="./tauri.svg" alt="logo" className="w-8 h-8" />
-                    <div className="flex flex-col gap-y-1">
+                    <img src="./logo.svg" alt="logo" className="w-8 h-8" />
+                    <div className="flex flex-col gap-y-0.5">
                         <h1 className="text-sm font-semibold">Keyviz</h1>
-                        <p className="text-xs text-gray-400">v2.0.4a</p>
+                        <p className="text-xs text-gray-400">v2.1.0-beta</p>
                     </div>
                 </div>
                 {

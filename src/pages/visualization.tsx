@@ -6,13 +6,16 @@ import { listenForUpdates } from '@/stores/sync';
 import { EventPayload } from "@/types/event";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { useEffect, } from "react";
+import { primaryMonitor } from "@tauri-apps/api/window";
+import { useEffect, useState, } from "react";
 
 export function Visualization() {
   const monitor = useKeyStyle((state) => state.appearance.monitor);
   const onEvent = useKeyEvent((state) => state.onEvent);
-  const setIsStyling = useKeyEvent((state) => state.setIsStyling);
   const tick = useKeyEvent((state) => state.tick);
+
+  // listening for input events
+  const [isListening, setIsListening] = useState(true);
 
   useEffect(() => {
     const unlistenPromises = [
@@ -22,7 +25,11 @@ export function Visualization() {
       listenForUpdates<KeyEventStore>(KEY_EVENT_STORE, useKeyEvent.setState),
       listenForUpdates<KeyStyleStore>(KEY_STYLE_STORE, useKeyStyle.setState),
       // ───────────── settings window open/close ─────────────
-      listen<boolean>("settings-window", (event) => setIsStyling(event.payload)),
+      listen<boolean>("settings-window", (event) => {
+        useKeyEvent.setState({ settingsOpen: event.payload });
+      }),
+      // ───────────── listener toggle ─────────────
+      listen<boolean>("listening-toggle", (event) => setIsListening(event.payload)),
     ];
     const id = setInterval(tick, 150);
 
@@ -33,8 +40,19 @@ export function Visualization() {
   }, []);
 
   useEffect(() => {
-    invoke("set_main_window_monitor", { monitorName: monitor ?? "" });
+    const set_monitor = async () => {
+      let monitorName = monitor;
+      if (!monitorName) {
+        const primary = await primaryMonitor();
+        monitorName = primary?.name ?? "";
+      }
+      if (!monitorName) return;
+      await invoke("set_main_window_monitor", { monitorName });
+    }
+    set_monitor();
   }, [monitor]);
+
+  if (!isListening) return;
 
   return <div className="w-screen h-screen relative overflow-hidden">
     <MouseOverlay />
