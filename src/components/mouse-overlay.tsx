@@ -46,7 +46,7 @@ export const MouseOverlay = () => {
                 // positionRef.current.style.opacity = '0'; 
                 return;
             }
-            
+
             positionRef.current!.style.transform =
                 `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
         });
@@ -59,8 +59,6 @@ export const MouseOverlay = () => {
     // Logic to determine if we should render anything at all to keep DOM light
     const shouldRender = style.showClicks || style.keepHighlight || style.showIndicator;
     if (!shouldRender) return null;
-
-    const isVisible = isPressed || style.keepHighlight;
 
     return (
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
@@ -77,7 +75,7 @@ export const MouseOverlay = () => {
                         className="w-full h-full"
                         initial={false}
                         animate={{
-                            opacity: isVisible ? 1 : 0,
+                            opacity: isPressed || style.keepHighlight ? 1 : 0,
                             scale: isPressed ? 0.5 : 1.0,
                             borderWidth: style.size / 20,
                         }}
@@ -93,11 +91,11 @@ export const MouseOverlay = () => {
                     />
                 )}
 
-                {style.showIndicator && (
-                    <motion.div animate={{ opacity: isVisible || mouseWheel !== 0 ? 1 : 0 }}>
+                {style.showIndicator &&
+                    <div className="absolute left-1/2 top-1/2">
                         <MouseIndicator />
-                    </motion.div>
-                )}
+                    </div>
+                }
             </div>
         </div>
     );

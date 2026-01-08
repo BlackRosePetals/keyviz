@@ -1,7 +1,7 @@
 import { easeInQuint, easeOutQuint } from "@/lib/utils";
 import { useKeyEvent } from "@/stores/key_event";
 import { useKeyStyle } from "@/stores/key_style";
-import { alignmentForColumn } from "@/types/style";
+import { alignmentForColumn, alignmentForRow } from "@/types/style";
 import { AnimatePresence, motion, Variants } from "motion/react";
 import { useMemo } from "react";
 import { Keycap } from "./keycaps";
@@ -21,7 +21,9 @@ export const KeyOverlay = () => {
     const border = useKeyStyle(state => state.border);
     const background = useKeyStyle(state => state.background);
 
-    const alignment = alignmentForColumn[appearance.alignment];
+    const alignment = appearance.flexDirection === "row"
+        ? alignmentForRow[appearance.alignment]
+        : alignmentForColumn[appearance.alignment];
 
     const containerStyle = {
         flexDirection: appearance.flexDirection,
@@ -96,7 +98,7 @@ export const KeyOverlay = () => {
                                     initial="hidden"
                                     animate="visible"
                                     exit="hidden"
-                                    
+
                                     transition={{
                                         ease: [easeOutQuint, easeInQuint],
                                         duration: appearance.animationDuration,

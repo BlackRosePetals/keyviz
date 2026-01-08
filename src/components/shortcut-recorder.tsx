@@ -1,5 +1,5 @@
 import { keymaps } from '@/lib/keymaps';
-import { MODIFIERS, RawKey } from '@/types/event';
+import { RawKey } from '@/types/event';
 import { useEffect, useRef, useState } from 'react';
 
 

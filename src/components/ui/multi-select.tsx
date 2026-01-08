@@ -58,7 +58,7 @@ const MultiSelect = React.forwardRef<
       showall = false,
       ...props
     },
-    ref
+    _
   ) => {
     const [selectedValues, setSelectedValues] =
       React.useState<string[]>(defaultValue);

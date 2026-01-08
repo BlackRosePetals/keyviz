@@ -67,12 +67,14 @@ export const MouseIndicator = () => {
 
     return (
         <div
-            className="absolute top-5/8 left-5/8 bg-black/50 text-white"
+            className="bg-black/50 text-white"
             style={{
-                width: style.size * 0.25,
-                height: style.size * 0.25,
+                width: style.indicatorSize,
+                height: style.indicatorSize,
+                marginTop: style.indicatorOffsetY,
+                marginLeft: style.indicatorOffsetX, 
                 borderRadius: "40%",
-                padding: style.size * 0.05,
+                padding: style.indicatorSize * 0.2,
             }}
         >
             {mouseIcons[icon]}
