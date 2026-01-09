@@ -1,4 +1,3 @@
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { AlignmentSelector } from "@/components/ui/alignment-selector";
 import { Button } from "@/components/ui/button";
 import { ColorInput } from "@/components/ui/color-picker";
@@ -13,7 +12,7 @@ import { useKeyStyle } from "@/stores/key_style";
 import { AlignHorizontalCenterIcon, AlignLeftIcon, AlignRightIcon, Download01Icon, PaintBoardIcon, Refresh01Icon, Upload01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 
 export interface KeycapTheme {
     name: string;
@@ -170,11 +169,11 @@ export const KeycapSettings = () => {
     }
 
     return <div className="flex flex-col p-6 gap-y-4">
+        <h1 className="text-xl font-semibold">Keycap</h1>
+
+        <h2 className="text-sm text-muted-foreground font-medium">Preset</h2>
         <Item variant="muted">
             <ItemActions className="w-full">
-                <ItemTitle className="mr-2">
-                    Preset
-                </ItemTitle>
                 <Select value={appearance.style} onValueChange={onStyleChange}>
                     <SelectTrigger className="w-28">
                         <SelectValue />
@@ -229,356 +228,363 @@ export const KeycapSettings = () => {
             </ItemActions>
         </Item>
 
-        <Accordion type="multiple" className="w-full" defaultValue={["text"]}>
-            <AccordionItem value="text">
-                <AccordionTrigger>Text</AccordionTrigger>
-                <AccordionContent className="h-fit flex flex-col gap-4">
-                    <ItemGrid className="md:grid-cols-[240px_1fr]">
-                        <AlignmentSelector
-                            value={text.alignment}
-                            onChange={(value) => setTextStyle({ alignment: value })}
-                            className="w-full h-48 text-2xl"
-                        />
-                        <ItemGroup>
-                            <Item variant="muted" className="flex-2">
-                                <ItemContent>
-                                    <ItemTitle>Size</ItemTitle>
-                                </ItemContent>
-                                <ItemActions>
-                                    <NumberInput
-                                        value={text.size}
-                                        onChange={(value) => setTextStyle({ size: value })} minValue={8}
-                                        className="w-28 h-8"
-                                    />
-                                </ItemActions>
-                            </Item>
-                            <Item variant="muted" className="flex-2">
-                                <ItemContent>
-                                    <ItemTitle>Modifier Text</ItemTitle>
-                                </ItemContent>
-                                <ItemActions>
-                                    <Select value={modifier.textVariant} onValueChange={(value) => {
-                                        setModifierStyle({ textVariant: value as any });
-                                        if (value === "icon") {
-                                            setLayoutStyle({ showIcon: true });
-                                        }
-                                    }}>
-                                        <SelectTrigger className="w-28">
-                                            <SelectValue placeholder="text variant" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="text-short">Short Text</SelectItem>
-                                            <SelectItem value="text">Full Text</SelectItem>
-                                            <SelectItem value="icon">Icon Only</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-
-                                </ItemActions>
-                            </Item>
-                            <Item variant="muted" className="flex-2">
-                                <ItemContent>
-                                    <ItemTitle>Text Cap</ItemTitle>
-                                </ItemContent>
-                                <ItemActions>
-                                    <ToggleGroup
-                                        type="single"
-                                        value={text.caps} onValueChange={(value) => setTextStyle({ caps: value as 'uppercase' | 'capitalize' | 'lowercase' })}
-                                        variant="outline"
-                                        className="w-28"
-                                    >
-                                        <ToggleGroupItem className="w-1/3" value="uppercase">AA</ToggleGroupItem>
-                                        <ToggleGroupItem className="w-1/3" value="capitalize">Aa</ToggleGroupItem>
-                                        <ToggleGroupItem className="w-1/3" value="lowercase">aa</ToggleGroupItem>
-                                    </ToggleGroup>
-                                </ItemActions>
-                            </Item>
-                        </ItemGroup>
-                    </ItemGrid>
-                    <ItemGrid>
-                        <Item variant="muted" className={modifier.highlight ? "" : "col-span-2"}>
+        <Collapsible defaultOpen={true}>
+            <CollapsibleTrigger>
+                <h2 className="text-sm text-muted-foreground font-medium">Text</h2>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="flex flex-col gap-y-4 pt-4">
+                <ItemGrid className="md:grid-cols-[240px_1fr]">
+                    <AlignmentSelector
+                        value={text.alignment}
+                        onChange={(value) => setTextStyle({ alignment: value })}
+                        className="w-full h-48 text-2xl"
+                    />
+                    <ItemGroup>
+                        <Item variant="muted" className="flex-2">
                             <ItemContent>
-                                <ItemTitle>Text Color</ItemTitle>
+                                <ItemTitle>Size</ItemTitle>
                             </ItemContent>
                             <ItemActions>
-                                <ColorInput value={text.color} onChange={(color) => setTextStyle({ color })} />
-                            </ItemActions>
-                        </Item>
-                        {
-                            modifier.highlight &&
-                            <Item variant="muted">
-                                <ItemContent>
-                                    <ItemTitle>Modifier Color</ItemTitle>
-                                </ItemContent>
-                                <ItemActions>
-                                    <ColorInput value={modifier.textColor} onChange={(textColor) => setModifierStyle({ textColor })} />
-                                </ItemActions>
-                            </Item>
-                        }
-                    </ItemGrid>
-                </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="layout">
-                <AccordionTrigger>Layout</AccordionTrigger>
-                <AccordionContent className="h-fit flex flex-col gap-4">
-                    <ItemGrid>
-
-                        <Item variant="muted">
-                            <ItemContent>
-                                <ItemTitle>Icon</ItemTitle>
-                            </ItemContent>
-                            <ItemActions>
-                                <Switch
-                                    checked={layout.showIcon}
-                                    onCheckedChange={(showIcon) => setLayoutStyle({ showIcon })}
-                                    disabled={modifier.textVariant === "icon"}
+                                <NumberInput
+                                    value={text.size}
+                                    onChange={(value) => setTextStyle({ size: value })} minValue={8}
+                                    className="w-28 h-8"
                                 />
                             </ItemActions>
                         </Item>
-                        <Item variant="muted">
+                        <Item variant="muted" className="flex-2">
                             <ItemContent>
-                                <ItemTitle>Alignment</ItemTitle>
+                                <ItemTitle>Modifier Text</ItemTitle>
+                            </ItemContent>
+                            <ItemActions>
+                                <Select value={modifier.textVariant} onValueChange={(value) => {
+                                    setModifierStyle({ textVariant: value as any });
+                                    if (value === "icon") {
+                                        setLayoutStyle({ showIcon: true });
+                                    }
+                                }}>
+                                    <SelectTrigger className="w-28">
+                                        <SelectValue placeholder="text variant" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="text-short">Short Text</SelectItem>
+                                        <SelectItem value="text">Full Text</SelectItem>
+                                        <SelectItem value="icon">Icon Only</SelectItem>
+                                    </SelectContent>
+                                </Select>
+
+                            </ItemActions>
+                        </Item>
+                        <Item variant="muted" className="flex-2">
+                            <ItemContent>
+                                <ItemTitle>Text Cap</ItemTitle>
                             </ItemContent>
                             <ItemActions>
                                 <ToggleGroup
                                     type="single"
-                                    value={layout.iconAlignment}
-                                    onValueChange={(value) => setLayoutStyle({ iconAlignment: value as "flex-start" | "flex-end" | "center" })}
+                                    value={text.caps} onValueChange={(value) => setTextStyle({ caps: value as 'uppercase' | 'capitalize' | 'lowercase' })}
                                     variant="outline"
                                     className="w-28"
-                                    disabled={!layout.showIcon}
                                 >
-                                    <ToggleGroupItem className="w-1/3" value="flex-start">
-                                        <HugeiconsIcon icon={AlignLeftIcon} />
-                                    </ToggleGroupItem>
-                                    <ToggleGroupItem className="w-1/3" value="center">
-                                        <HugeiconsIcon icon={AlignHorizontalCenterIcon} />
-                                    </ToggleGroupItem>
-                                    <ToggleGroupItem className="w-1/3" value="flex-end">
-                                        <HugeiconsIcon icon={AlignRightIcon} />
-                                    </ToggleGroupItem>
+                                    <ToggleGroupItem className="w-1/3" value="uppercase">AA</ToggleGroupItem>
+                                    <ToggleGroupItem className="w-1/3" value="capitalize">Aa</ToggleGroupItem>
+                                    <ToggleGroupItem className="w-1/3" value="lowercase">aa</ToggleGroupItem>
                                 </ToggleGroup>
                             </ItemActions>
                         </Item>
-                    </ItemGrid>
+                    </ItemGroup>
+                </ItemGrid>
+                <ItemGrid>
+                    <Item variant="muted" className={modifier.highlight ? "" : "col-span-2"}>
+                        <ItemContent>
+                            <ItemTitle>Text Color</ItemTitle>
+                        </ItemContent>
+                        <ItemActions>
+                            <ColorInput value={text.color} onChange={(color) => setTextStyle({ color })} />
+                        </ItemActions>
+                    </Item>
+                    {
+                        modifier.highlight &&
+                        <Item variant="muted">
+                            <ItemContent>
+                                <ItemTitle>Modifier Color</ItemTitle>
+                            </ItemContent>
+                            <ItemActions>
+                                <ColorInput value={modifier.textColor} onChange={(textColor) => setModifierStyle({ textColor })} />
+                            </ItemActions>
+                        </Item>
+                    }
+                </ItemGrid>
+            </CollapsibleContent>
+        </Collapsible>
+
+        <Collapsible>
+            <CollapsibleTrigger>
+                <h2 className="text-sm text-muted-foreground font-medium">Layout</h2>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="flex flex-col gap-y-4 pt-4">
+                <ItemGrid>
                     <Item variant="muted">
                         <ItemContent>
-                            <ItemTitle>Symbol</ItemTitle>
-                            <ItemDescription>Display symbol characters like !, @, #, etc.</ItemDescription>
+                            <ItemTitle>Icon</ItemTitle>
                         </ItemContent>
                         <ItemActions>
                             <Switch
-                                checked={layout.showSymbol}
-                                onCheckedChange={(showSymbol) => setLayoutStyle({ showSymbol })}
+                                checked={layout.showIcon}
+                                onCheckedChange={(showIcon) => setLayoutStyle({ showIcon })}
+                                disabled={modifier.textVariant === "icon"}
                             />
                         </ItemActions>
                     </Item>
-                </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="container">
-                <AccordionTrigger>Container</AccordionTrigger>
-                <AccordionContent className="h-fit flex flex-col gap-4">
                     <Item variant="muted">
                         <ItemContent>
-                            <ItemTitle>Highlight Modifier</ItemTitle>
-                            <ItemDescription>Use different color for modifier keys</ItemDescription>
+                            <ItemTitle>Alignment</ItemTitle>
                         </ItemContent>
                         <ItemActions>
-                            <Switch checked={modifier.highlight} onCheckedChange={(highlight) => setModifierStyle({ highlight })} />
+                            <ToggleGroup
+                                type="single"
+                                value={layout.iconAlignment}
+                                onValueChange={(value) => setLayoutStyle({ iconAlignment: value as "flex-start" | "flex-end" | "center" })}
+                                variant="outline"
+                                className="w-28"
+                                disabled={!layout.showIcon}
+                            >
+                                <ToggleGroupItem className="w-1/3" value="flex-start">
+                                    <HugeiconsIcon icon={AlignLeftIcon} />
+                                </ToggleGroupItem>
+                                <ToggleGroupItem className="w-1/3" value="center">
+                                    <HugeiconsIcon icon={AlignHorizontalCenterIcon} />
+                                </ToggleGroupItem>
+                                <ToggleGroupItem className="w-1/3" value="flex-end">
+                                    <HugeiconsIcon icon={AlignRightIcon} />
+                                </ToggleGroupItem>
+                            </ToggleGroup>
+                        </ItemActions>
+                    </Item>
+                </ItemGrid>
+                <Item variant="muted">
+                    <ItemContent>
+                        <ItemTitle>Symbol</ItemTitle>
+                        <ItemDescription>Display symbol characters like !, @, #, etc.</ItemDescription>
+                    </ItemContent>
+                    <ItemActions>
+                        <Switch
+                            checked={layout.showSymbol}
+                            onCheckedChange={(showSymbol) => setLayoutStyle({ showSymbol })}
+                        />
+                    </ItemActions>
+                </Item>
+            </CollapsibleContent>
+        </Collapsible>
+
+        <Collapsible>
+            <CollapsibleTrigger>
+                <h2 className="text-sm text-muted-foreground font-medium">Container</h2>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="flex flex-col gap-y-4 pt-4">
+                <Item variant="muted">
+                    <ItemContent>
+                        <ItemTitle>Highlight Modifier</ItemTitle>
+                        <ItemDescription>Use different color for modifier keys</ItemDescription>
+                    </ItemContent>
+                    <ItemActions>
+                        <Switch checked={modifier.highlight} onCheckedChange={(highlight) => setModifierStyle({ highlight })} />
+                    </ItemActions>
+                </Item>
+                <Item variant="muted">
+                    <ItemContent>
+                        <ItemTitle>Gradient</ItemTitle>
+                    </ItemContent>
+                    <ItemActions>
+                        <Switch
+                            checked={color.useGradient}
+                            onCheckedChange={(useGradient) => setColorStyle({ useGradient })}
+                        />
+                    </ItemActions>
+                </Item>
+                {
+                    (appearance.style === "minimal" || appearance.style === "flat") ?
+                        <ItemGrid>
+                            <Item variant="muted" className={modifier.highlight ? "" : "col-span-2"}>
+                                <ItemContent>
+                                    <ItemTitle>Normal</ItemTitle>
+                                </ItemContent>
+                                <ItemActions>
+                                    <ColorInput value={color.color} onChange={(color) => setColorStyle({ color: color as string })} />
+                                </ItemActions>
+                            </Item>
+                            {
+                                modifier.highlight &&
+                                <Item variant="muted">
+                                    <ItemContent>
+                                        <ItemTitle>Modifier</ItemTitle>
+                                    </ItemContent>
+                                    <ItemActions>
+                                        <ColorInput value={modifier.color} onChange={(color) => setModifierStyle({ color: color as string })} />
+                                    </ItemActions>
+                                </Item>
+                            }
+                        </ItemGrid> :
+                        <>
+                            {modifier.highlight && <h1>Normal Color</h1>}
+                            <ItemGrid>
+                                <Item variant="muted">
+                                    <ItemContent>
+                                        <ItemTitle>Primary</ItemTitle>
+                                    </ItemContent>
+                                    <ItemActions>
+                                        <ColorInput
+                                            value={color.color}
+                                            onChange={(color) => setColorStyle({ color })}
+                                        />
+                                    </ItemActions>
+                                </Item>
+                                <Item variant="muted">
+                                    <ItemContent>
+                                        <ItemTitle>Secondary</ItemTitle>
+                                    </ItemContent>
+                                    <ItemActions>
+                                        <ColorInput
+                                            value={color.secondaryColor}
+                                            onChange={(secondaryColor) => setColorStyle({ secondaryColor })}
+                                        />
+                                    </ItemActions>
+                                </Item>
+                            </ItemGrid>
+                            {
+                                modifier.highlight && <>
+                                    <h1>Modifier Color</h1>
+                                    <ItemGrid>
+                                        <Item variant="muted">
+                                            <ItemContent>
+                                                <ItemTitle>Primary</ItemTitle>
+                                            </ItemContent>
+                                            <ItemActions>
+                                                <ColorInput
+                                                    value={modifier.color}
+                                                    onChange={(color) => setModifierStyle({ color })}
+                                                />
+                                            </ItemActions>
+                                        </Item>
+                                        <Item variant="muted">
+                                            <ItemContent>
+                                                <ItemTitle>Secondary</ItemTitle>
+                                            </ItemContent>
+                                            <ItemActions>
+                                                <ColorInput
+                                                    value={modifier.secondaryColor}
+                                                    onChange={(secondaryColor) => setModifierStyle({ secondaryColor })}
+                                                />
+                                            </ItemActions>
+                                        </Item>
+                                    </ItemGrid>
+                                </>
+                            }
+                        </>
+                }
+            </CollapsibleContent>
+        </Collapsible>
+
+        <Collapsible>
+            <CollapsibleTrigger>
+                <h2 className="text-sm text-muted-foreground font-medium">Border</h2>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="flex flex-col gap-y-4 pt-4">
+                <ItemGrid>
+                    <Item variant="muted">
+                        <ItemContent className="min-h-6 h-full justify-center">
+                            <ItemTitle>Enable</ItemTitle>
+                        </ItemContent>
+                        <ItemActions>
+                            <Switch id="borderEnabled" checked={border.enabled} onCheckedChange={(enabled) => setBorderStyle({ enabled })} />
                         </ItemActions>
                     </Item>
                     <Item variant="muted">
                         <ItemContent>
-                            <ItemTitle>Gradient</ItemTitle>
+                            <ItemTitle>Width</ItemTitle>
                         </ItemContent>
                         <ItemActions>
-                            <Switch
-                                checked={color.useGradient}
-                                onCheckedChange={(useGradient) => setColorStyle({ useGradient })}
+                            <NumberInput
+                                minValue={0.5}
+                                step={0.5}
+                                value={border.width}
+                                onChange={(width) => setBorderStyle({ width })}
+                                className="max-w-20 h-8"
+                                isDisabled={!border.enabled}
+                            />
+                        </ItemActions>
+                    </Item>
+                    <Item variant="muted" className={modifier.highlight ? "" : "col-span-2"}>
+                        <ItemContent>
+                            <ItemTitle>Color</ItemTitle>
+                        </ItemContent>
+                        <ItemActions>
+                            <ColorInput
+                                value={border.color}
+                                onChange={(color) => setBorderStyle({ color: color as string })}
+                                disabled={!border.enabled}
                             />
                         </ItemActions>
                     </Item>
                     {
-                        (appearance.style === "minimal" || appearance.style === "flat") ?
-                            <ItemGrid>
-                                <Item variant="muted" className={modifier.highlight ? "" : "col-span-2"}>
-                                    <ItemContent>
-                                        <ItemTitle>Normal</ItemTitle>
-                                    </ItemContent>
-                                    <ItemActions>
-                                        <ColorInput value={color.color} onChange={(color) => setColorStyle({ color: color as string })} />
-                                    </ItemActions>
-                                </Item>
-                                {
-                                    modifier.highlight &&
-                                    <Item variant="muted">
-                                        <ItemContent>
-                                            <ItemTitle>Modifier</ItemTitle>
-                                        </ItemContent>
-                                        <ItemActions>
-                                            <ColorInput value={modifier.color} onChange={(color) => setModifierStyle({ color: color as string })} />
-                                        </ItemActions>
-                                    </Item>
-                                }
-                            </ItemGrid> :
-                            <>
-                                {modifier.highlight && <h1>Normal Color</h1>}
-                                <ItemGrid>
-                                    <Item variant="muted">
-                                        <ItemContent>
-                                            <ItemTitle>Primary</ItemTitle>
-                                        </ItemContent>
-                                        <ItemActions>
-                                            <ColorInput
-                                                value={color.color}
-                                                onChange={(color) => setColorStyle({ color })}
-                                            />
-                                        </ItemActions>
-                                    </Item>
-                                    <Item variant="muted">
-                                        <ItemContent>
-                                            <ItemTitle>Secondary</ItemTitle>
-                                        </ItemContent>
-                                        <ItemActions>
-                                            <ColorInput
-                                                value={color.secondaryColor}
-                                                onChange={(secondaryColor) => setColorStyle({ secondaryColor })}
-                                            />
-                                        </ItemActions>
-                                    </Item>
-                                </ItemGrid>
-                                {
-                                    modifier.highlight && <>
-                                        <h1>Modifier Color</h1>
-                                        <ItemGrid>
-                                            <Item variant="muted">
-                                                <ItemContent>
-                                                    <ItemTitle>Primary</ItemTitle>
-                                                </ItemContent>
-                                                <ItemActions>
-                                                    <ColorInput
-                                                        value={modifier.color}
-                                                        onChange={(color) => setModifierStyle({ color })}
-                                                    />
-                                                </ItemActions>
-                                            </Item>
-                                            <Item variant="muted">
-                                                <ItemContent>
-                                                    <ItemTitle>Secondary</ItemTitle>
-                                                </ItemContent>
-                                                <ItemActions>
-                                                    <ColorInput
-                                                        value={modifier.secondaryColor}
-                                                        onChange={(secondaryColor) => setModifierStyle({ secondaryColor })}
-                                                    />
-                                                </ItemActions>
-                                            </Item>
-                                        </ItemGrid>
-                                    </>
-                                }
-                            </>
-                    }
-                </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="border">
-                <AccordionTrigger>Border</AccordionTrigger>
-                <AccordionContent className="h-fit flex flex-col gap-4">
-                    <ItemGrid>
-                        <Item variant="muted">
-                            <ItemContent className="min-h-6 h-full justify-center">
-                                <ItemTitle>Enable</ItemTitle>
-                            </ItemContent>
-                            <ItemActions>
-                                <Switch id="borderEnabled" checked={border.enabled} onCheckedChange={(enabled) => setBorderStyle({ enabled })} />
-                            </ItemActions>
-                        </Item>
-                        <Item variant="muted">
+                        modifier.highlight && <Item variant="muted">
                             <ItemContent>
-                                <ItemTitle>Width</ItemTitle>
-                            </ItemContent>
-                            <ItemActions>
-                                <NumberInput
-                                    minValue={0.5}
-                                    step={0.5}
-                                    value={border.width}
-                                    onChange={(width) => setBorderStyle({ width })}
-                                    className="max-w-20 h-8"
-                                    isDisabled={!border.enabled}
-                                />
-                            </ItemActions>
-                        </Item>
-                        <Item variant="muted" className={modifier.highlight ? "" : "col-span-2"}>
-                            <ItemContent>
-                                <ItemTitle>Color</ItemTitle>
+                                <ItemTitle>Modifier Color</ItemTitle>
                             </ItemContent>
                             <ItemActions>
                                 <ColorInput
-                                    value={border.color}
-                                    onChange={(color) => setBorderStyle({ color: color as string })}
+                                    value={modifier.borderColor}
+                                    onChange={(color) => setModifierStyle({ borderColor: color as string })}
                                     disabled={!border.enabled}
                                 />
                             </ItemActions>
                         </Item>
-                        {
-                            modifier.highlight && <Item variant="muted">
-                                <ItemContent>
-                                    <ItemTitle>Modifier Color</ItemTitle>
-                                </ItemContent>
-                                <ItemActions>
-                                    <ColorInput
-                                        value={modifier.borderColor}
-                                        onChange={(color) => setModifierStyle({ borderColor: color as string })}
-                                        disabled={!border.enabled}
-                                    />
-                                </ItemActions>
-                            </Item>
-                        }
-                    </ItemGrid>
+                    }
+                </ItemGrid>
+                <Item variant="muted">
+                    <ItemContent>
+                        <ItemTitle>Radius</ItemTitle>
+                    </ItemContent>
+                    <ItemActions>
+                        <div className="w-4 h-4 border-l-2 border-t-2 border-primary/50" style={{ borderTopLeftRadius: `${border.radius * 100}%` }} />
+                        <Slider
+                            min={0}
+                            max={1}
+                            step={0.01}
+                            value={[border.radius]}
+                            onValueChange={(value) => setBorderStyle({ radius: value[0] })}
+                            className="w-40 h-8 mx-2"
+                        />
+                        <Label htmlFor="borderRadius" className="w-[4ch] font-mono text-right">{(border.radius * 100).toFixed(0)}%</Label>
+                    </ItemActions>
+                </Item>
+            </CollapsibleContent>
+        </Collapsible>
+
+        <Collapsible>
+            <CollapsibleTrigger>
+                <h2 className="text-sm text-muted-foreground font-medium">Background</h2>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="flex flex-col gap-y-4 pt-4">
+                <ItemGrid>
                     <Item variant="muted">
-                        <ItemContent>
-                            <ItemTitle>Radius</ItemTitle>
+                        <ItemContent className="min-h-6 h-full justify-center">
+                            <ItemTitle>Enable</ItemTitle>
                         </ItemContent>
                         <ItemActions>
-                            <div className="w-4 h-4 border-l-2 border-t-2 border-primary/50" style={{ borderTopLeftRadius: `${border.radius * 100}%` }} />
-                            <Slider
-                                min={0}
-                                max={1}
-                                step={0.01}
-                                value={[border.radius]}
-                                onValueChange={(value) => setBorderStyle({ radius: value[0] })}
-                                className="w-40 h-8 mx-2"
-                            />
-                            <Label htmlFor="borderRadius" className="w-[4ch] font-mono text-right">{(border.radius * 100).toFixed(0)}%</Label>
+                            <Switch checked={background.enabled} onCheckedChange={(enabled) => setBackgroundStyle({ enabled })} />
                         </ItemActions>
                     </Item>
-                </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="background">
-                <AccordionTrigger>Background</AccordionTrigger>
-                <AccordionContent className="h-fit flex flex-col gap-4">
-                    <ItemGrid>
-                        <Item variant="muted">
-                            <ItemContent className="min-h-6 h-full justify-center">
-                                <ItemTitle>Enable</ItemTitle>
-                            </ItemContent>
-                            <ItemActions>
-                                <Switch checked={background.enabled} onCheckedChange={(enabled) => setBackgroundStyle({ enabled })} />
-                            </ItemActions>
-                        </Item>
-                        <Item variant="muted">
-                            <ItemContent>
-                                <ItemTitle>Color</ItemTitle>
-                            </ItemContent>
-                            <ItemActions>
-                                <ColorInput value={background.color} onChange={(color) => setBackgroundStyle({ color: color as string })} disabled={!background.enabled} />
-                            </ItemActions>
-                        </Item>
-                    </ItemGrid>
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
+                    <Item variant="muted">
+                        <ItemContent>
+                            <ItemTitle>Color</ItemTitle>
+                        </ItemContent>
+                        <ItemActions>
+                            <ColorInput value={background.color} onChange={(color) => setBackgroundStyle({ color: color as string })} disabled={!background.enabled} />
+                        </ItemActions>
+                    </Item>
+                </ItemGrid>
+            </CollapsibleContent>
+        </Collapsible>
     </div>;
 }

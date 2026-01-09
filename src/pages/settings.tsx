@@ -1,10 +1,12 @@
+import { useState } from "react";
+
 import { AboutPage, AppearanceSettings, GeneralSettings, KeycapSettings, MouseSettings } from "@/components/settings";
+import { VERSION } from "@/components/settings/about";
 import { ThemeModeToggle } from "@/components/theme-mode-toggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { SidebarItem } from "@/components/ui/sidebar-item";
 import { ComputerIcon, InformationSquareIcon, KeyboardIcon, Mouse09Icon, Settings03Icon } from "@hugeicons/core-free-icons";
-import { useState } from "react";
 
 const sideBar = [
     { title: "General", icon: Settings03Icon },
@@ -23,7 +25,7 @@ const Settings = () => {
                     <img src="./logo.svg" alt="logo" className="w-8 h-8" />
                     <div className="flex flex-col gap-y-0.5">
                         <h1 className="text-sm font-semibold">Keyviz</h1>
-                        <p className="text-xs text-gray-400">v2.1.0-beta</p>
+                        <p className="text-xs text-gray-400">v{VERSION}-beta</p>
                     </div>
                 </div>
                 {

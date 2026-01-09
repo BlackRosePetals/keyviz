@@ -150,9 +150,9 @@ const createKeyStyleStore = createSyncedStore<KeyStyleStore>(
             color: "#90d5ff",
             keepHighlight: true,
             showIndicator: true,
-            indicatorSize: 24,
-            indicatorOffsetX: 16,
-            indicatorOffsetY: 16,
+            indicatorSize: 50,
+            indicatorOffsetX: 50,
+            indicatorOffsetY: 50,
         },
 
         setAppearance: (appearance) => set((state) => ({ appearance: { ...state.appearance, ...appearance } })),

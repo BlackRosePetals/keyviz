@@ -444,7 +444,7 @@ export const ColorPickerFormat = ({ className, ...props }: HTMLAttributes<HTMLDi
           const { h, s, l } = colord({ r, g, b: val }).toHsl();
           setHue(h); setSaturation(s); setLightness(l);
         }} label="B" className="flex-1" />
-        <ChannelInput value={Math.round(alpha)} onChange={setAlpha} max={100} label="%" className="w-12" />
+        <ChannelInput value={Math.round(alpha)} onChange={setAlpha} max={100} label="%" className="w-13" />
       </div>
     );
   }
@@ -455,7 +455,7 @@ export const ColorPickerFormat = ({ className, ...props }: HTMLAttributes<HTMLDi
         <ChannelInput value={Math.round(hue)} onChange={setHue} max={360} label="H" className="flex-1" />
         <ChannelInput value={Math.round(saturation)} onChange={setSaturation} max={100} label="S" className="flex-1" />
         <ChannelInput value={Math.round(lightness)} onChange={setLightness} max={100} label="L" className="flex-1" />
-        <ChannelInput value={Math.round(alpha)} onChange={setAlpha} max={100} label="%" className="w-12" />
+        <ChannelInput value={Math.round(alpha)} onChange={setAlpha} max={100} label="%" className="w-13" />
       </div>
     );
   }
@@ -484,8 +484,8 @@ export const ColorInput = ({ value: colorHex, onChange, disabled, className }: {
         <span className="font-mono">{colorHex}</span>
       </Button>
     </PopoverTrigger>
-    <PopoverContent align="start" className="w-80 h-72">
-      <ColorPicker value={colorHex} onChange={c => onChange(c.toString())} className="w-64 h-64">
+    <PopoverContent align="start" className="w-76 h-72">
+      <ColorPicker value={colorHex} onChange={c => onChange(c.toString())} className="w-full h-full">
         <ColorPickerSelection />
         <div className="flex items-center gap-4">
           <ColorPickerEyeDropper />

@@ -14,10 +14,9 @@ import { availableMonitors, getAllWindows, Monitor } from "@tauri-apps/api/windo
 
 
 export const AppearanceSettings = () => {
-    
     const appearance = useKeyStyle(state => state.appearance);
     const setAppearance = useKeyStyle(state => state.setAppearance);
-    
+
     const lingerDurationMs = useKeyEvent(state => state.lingerDurationMs);
     const setLingerDurationMs = useKeyEvent(state => state.setLingerDurationMs);
 
@@ -36,6 +35,7 @@ export const AppearanceSettings = () => {
     return <div className="flex flex-col gap-y-4 p-6">
         <h1 className="text-xl font-semibold">Appearance</h1>
 
+        <h2 className="text-sm text-muted-foreground font-medium">Position</h2>
         {
             monitors.length > 1 &&
             <Item variant="muted">
@@ -145,6 +145,7 @@ export const AppearanceSettings = () => {
             </ItemActions>
         </Item>
 
+        <h2 className="text-sm text-muted-foreground font-medium">Animation</h2>
         <Item variant="muted">
             <ItemContent>
                 <ItemTitle>

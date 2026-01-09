@@ -182,7 +182,7 @@ export const RawKey = {
 } as const;
 
 export type RawKeyValue = typeof RawKey[keyof typeof RawKey];
-export const AllowedKeys = new Set<string>(Object.values(RawKey));
+export const MappedKeys = new Set<string>(Object.values(RawKey));
 
 export const MODIFIERS = new Set<string>([
   RawKey.ShiftLeft,

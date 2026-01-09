@@ -84,7 +84,7 @@ export const MouseSettings = () => {
                     <HugeiconsIcon icon={Cursor01Icon} size="1em" /> Always Highlight
                 </ItemTitle>
                 <ItemDescription>
-                    Permanently show the ring around the cursor
+                    Permanently show the ring/icon around the cursor
                 </ItemDescription>
             </ItemContent>
             <ItemActions>

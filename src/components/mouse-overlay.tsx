@@ -10,7 +10,6 @@ export const MouseOverlay = () => {
     const monitorName = useKeyStyle(state => state.appearance.monitor);
 
     const isPressed = useKeyEvent(state => state.showMouseClicked);
-    const mouseWheel = useKeyEvent(state => state.mouse.wheel);
 
     const style = useKeyStyle(state => state.mouse);
     const animationDuration = useKeyStyle(state => state.appearance.animationDuration);
@@ -60,6 +59,8 @@ export const MouseOverlay = () => {
     const shouldRender = style.showClicks || style.keepHighlight || style.showIndicator;
     if (!shouldRender) return null;
 
+    const isVisible = isPressed || style.keepHighlight;
+
     return (
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
             <div
@@ -75,7 +76,7 @@ export const MouseOverlay = () => {
                         className="w-full h-full"
                         initial={false}
                         animate={{
-                            opacity: isPressed || style.keepHighlight ? 1 : 0,
+                            opacity: isVisible ? 1 : 0,
                             scale: isPressed ? 0.5 : 1.0,
                             borderWidth: style.size / 20,
                         }}
@@ -92,9 +93,13 @@ export const MouseOverlay = () => {
                 )}
 
                 {style.showIndicator &&
-                    <div className="absolute left-1/2 top-1/2">
+                    <motion.div
+                        className="absolute left-1/2 top-1/2"
+                        animate={{ opacity: isVisible ? 1 : 0 }}
+                        transition={{ duration: 0.2 }}
+                    >
                         <MouseIndicator />
-                    </div>
+                    </motion.div>
                 }
             </div>
         </div>

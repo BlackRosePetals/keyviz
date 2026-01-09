@@ -15,6 +15,7 @@ const fadeVariants: Variants = {
 export const KeyOverlay = () => {
     const pressedKeys = useKeyEvent(state => state.pressedKeys);
     const groups = useKeyEvent(state => state.groups);
+    const showHistory = useKeyEvent(state => state.showEventHistory);
 
     const appearance = useKeyStyle(state => state.appearance);
     const text = useKeyStyle(state => state.text);
@@ -45,8 +46,6 @@ export const KeyOverlay = () => {
         }),
     }
 
-    const layoutAnimation = appearance.animation === "none" ? false : "position";
-
     const variants = useMemo<Variants>(() => {
         switch (appearance.animation) {
             case "none":
@@ -74,37 +73,60 @@ export const KeyOverlay = () => {
         }
     }, [appearance.animation, text.size]);
 
+    if (appearance.animation === "none") {
+        return (
+            <div className="w-full h-full flex" style={containerStyle}>
+                {groups.map((group) => (
+                    <div
+                        key={group.timestamp}
+                        style={groupStyle}
+                        className={background.enabled ? "overflow-hidden" : ""}
+                    >
+                        {group.keys.map(event => (
+                            <Keycap
+                                key={event.name}
+                                event={event}
+                                isPressed={groups[groups.length - 1] === group && event.in(pressedKeys)}
+                            />
+                        ))}
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
     return (
         <div className="w-full h-full flex" style={containerStyle}>
             <AnimatePresence>
                 {groups.map((group, index) => (
                     <motion.div
                         key={group.timestamp}
-                        layout={layoutAnimation}
-                        variants={appearance.animation === "none" ? {} : fadeVariants}
+                        layout={showHistory ? "position" : false}
+                        variants={fadeVariants}
                         initial="hidden"
                         animate="visible"
                         exit="hidden"
                         style={groupStyle}
                         className={background.enabled ? "overflow-hidden" : ""}
-                        transition={{ ease: [easeOutQuint, easeInQuint], duration: appearance.animationDuration }}
+                        transition={{
+                            ease: [easeOutQuint, easeInQuint],
+                            duration: showHistory ? appearance.animationDuration : 0
+                        }}
                     >
-                        <AnimatePresence>
+                        <AnimatePresence >
                             {group.keys.map(event => (
                                 <motion.div
                                     key={event.name}
-                                    layout={layoutAnimation}
+                                    layout="position"
                                     variants={variants}
                                     initial="hidden"
                                     animate="visible"
                                     exit="hidden"
-
                                     transition={{
                                         ease: [easeOutQuint, easeInQuint],
                                         duration: appearance.animationDuration,
                                         layout: { duration: appearance.animationDuration / 3, ease: easeOutQuint },
                                     }}
-                                    className="cursor-pointer flex items-center"
                                 >
                                     <Keycap
                                         event={event}

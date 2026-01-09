@@ -1,5 +1,4 @@
 import { invoke } from '@tauri-apps/api/core';
-import { platform } from '@tauri-apps/plugin-os';
 
 import { Item, ItemActions, ItemContent, ItemDescription, ItemHeader, ItemTitle } from "@/components/ui/item";
 import { NumberInput } from '@/components/ui/number-input';
@@ -9,28 +8,24 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from "@/lib/utils";
 import { useKeyEvent } from "@/stores/key_event";
 import { useKeyStyle } from "@/stores/key_style";
-import { RawKey } from '@/types/event';
-import { ArrowHorizontalIcon, ArrowUp01Icon, ArrowUpBigIcon, ArrowVerticalIcon, CommandIcon, Diamond01Icon, FilterHorizontalIcon, LayerIcon, OptionIcon, ToggleOnIcon, WindowsOldIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
+import { ArrowHorizontalIcon, ArrowVerticalIcon, FilterHorizontalIcon, FilterIcon, LayerIcon, ToggleOnIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Button } from '../ui/button';
+import {
+    Drawer,
+    DrawerContent,
+    DrawerDescription,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+} from "@/components/ui/drawer"
+import { CustomFilter } from '../custom-filter';
 
-
-const currentPlatform = platform();
-const modifiers: { icon?: IconSvgElement; label: string; value: string[] }[] = [
-    { icon: ArrowUp01Icon, label: 'Ctrl', value: [RawKey.ControlLeft, RawKey.ControlRight] },
-    currentPlatform === 'macos'
-        ? { icon: CommandIcon, label: 'Cmd', value: [RawKey.MetaLeft, RawKey.MetaRight] }
-        : currentPlatform === 'windows'
-            ? { icon: WindowsOldIcon, label: 'Win', value: [RawKey.MetaLeft, RawKey.MetaRight] }
-            : { icon: Diamond01Icon, label: 'Meta', value: [RawKey.MetaLeft, RawKey.MetaRight] },
-    { icon: OptionIcon, label: currentPlatform === 'macos' ? 'Opt' : 'Alt', value: [RawKey.Alt] },
-    { icon: ArrowUpBigIcon, label: 'Shift', value: [RawKey.ShiftLeft, RawKey.ShiftRight] },
-    { label: 'Fn', value: [RawKey.Function] },
-];
 
 export const GeneralSettings = () => {
     const {
-        filterHotkeys, setFilterHotkeys,
-        ignoreModifiers, setIgnoreModifiers,
+        filter, setFilter,
+        allowedKeys,
         showEventHistory, setShowEventHistory,
         maxHistory, setMaxHistory,
         toggleShortcut, setToggleShortcut
@@ -45,47 +40,46 @@ export const GeneralSettings = () => {
         <Item variant="muted">
             <ItemContent>
                 <ItemTitle>
-                    <HugeiconsIcon icon={CommandIcon} size="1em" />
-                    Hotkey Filter
+                    <HugeiconsIcon icon={FilterIcon} size="1em" /> Filter
                 </ItemTitle>
                 <ItemDescription>
-                    Filter out letters, numbers, symbols, etc.
+                    {filter === 'none' && 'No filter applied, all keys will be shown.'}
+                    {filter === 'modifiers' && 'Only modifier keys will be shown.'}
+                    {filter === 'custom' && `Custom filter applied, ${allowedKeys.length} keys allowed.`}
                 </ItemDescription>
             </ItemContent>
             <ItemActions>
-                <Switch checked={filterHotkeys} onCheckedChange={setFilterHotkeys} />
+                {
+                    filter === 'custom' &&
+                    <Drawer>
+                        <DrawerTrigger asChild>
+                            <Button variant="outline" size="icon-sm">
+                                <HugeiconsIcon icon={FilterHorizontalIcon} />
+                            </Button>
+                        </DrawerTrigger>
+                        <DrawerContent>
+                            <DrawerContent>
+                                <DrawerHeader>
+                                    <DrawerTitle>Custom Filter</DrawerTitle>
+                                    <DrawerDescription>Select which keys to display. Hold down Ctrl to toggle related keys.</DrawerDescription>
+                                </DrawerHeader>
+                                <CustomFilter />
+                            </DrawerContent>
+                        </DrawerContent>
+                    </Drawer>
+                }
+                <ToggleGroup
+                    size="sm"
+                    type="single"
+                    variant="outline"
+                    value={filter}
+                    onValueChange={(value) => setFilter(value as 'none' | 'modifiers' | 'custom')}
+                >
+                    <ToggleGroupItem value="none" aria-label="No Filter">Off</ToggleGroupItem>
+                    <ToggleGroupItem value="modifiers" aria-label="Modifiers Only">Hotkeys</ToggleGroupItem>
+                    <ToggleGroupItem value="custom" aria-label="Custom Filter">Custom</ToggleGroupItem>
+                </ToggleGroup>
             </ItemActions>
-        </Item>
-
-        <Item variant="muted" className={cn("transition-opacity", filterHotkeys ? "" : "pointer-events-none opacity-50")}>
-            <ItemHeader className="flex-col items-start">
-                <ItemTitle>
-                    <HugeiconsIcon icon={FilterHorizontalIcon} size="1em" />
-                    Allowed Modifiers
-                </ItemTitle>
-                <ItemDescription>
-                    Skip any keystroke starting with the disabled modifiers below
-                </ItemDescription>
-            </ItemHeader>
-            <ItemContent>
-                <div className="p-2 flex gap-x-2 bg-background rounded-lg">
-                    {modifiers.map((mod) => (
-                        <KeyCap
-                            key={mod.label}
-                            icon={mod.icon}
-                            label={mod.label}
-                            disabled={ignoreModifiers.includes(mod.value[0])}
-                            onClick={() => {
-                                if (ignoreModifiers.includes(mod.value[0])) {
-                                    setIgnoreModifiers(ignoreModifiers.filter(m => !mod.value.includes(m)));
-                                } else {
-                                    setIgnoreModifiers([...ignoreModifiers, ...mod.value]);
-                                }
-                            }}
-                        />
-                    ))}
-                </div>
-            </ItemContent>
         </Item>
 
         <Item variant="muted">
@@ -153,17 +147,4 @@ export const GeneralSettings = () => {
             </ItemContent>
         </Item>
     </div>;
-}
-
-const KeyCap = ({ icon, label, disabled, onClick }: { icon?: IconSvgElement; label: string; disabled?: boolean; onClick?: () => void }) => {
-    return (
-        <a
-            className={cn("bg-linear-to-b from-primary/50 to-secondary rounded-lg cursor-pointer transition-opacity", disabled ? " opacity-50" : "")}
-            onClick={onClick}
-        >
-            <div className={cn("m-px mb-0.5 px-3 py-1.5 flex gap-1 bg-secondary rounded-lg", label !== "Ctrl" ? "items-center" : "")}>
-                {icon && <HugeiconsIcon icon={icon} size="1em" />}{label}
-            </div>
-        </a>
-    );
 }

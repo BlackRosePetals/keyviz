@@ -1,4 +1,4 @@
-import { AllowedKeys, EventPayload, KeyEvent, MODIFIERS, MouseButton, MouseButtonEvent, MouseMoveEvent, MouseWheelEvent, RawKey, RawKeyEvent } from "@/types/event";
+import { MappedKeys, EventPayload, KeyEvent, MODIFIERS, MouseButton, MouseButtonEvent, MouseMoveEvent, MouseWheelEvent, RawKey, RawKeyEvent } from "@/types/event";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { tauriStorage } from "./storage";
 import { createSyncedStore } from "./sync";
@@ -33,8 +33,8 @@ interface KeyEventState {
     showMouseClicked: boolean;
     // ───────────── config ─────────────
     dragThreshold: number;
-    filterHotkeys: boolean;
-    ignoreModifiers: string[];
+    filter: "none" | "modifiers" | "custom";
+    allowedKeys: string[];
     showEventHistory: boolean;
     maxHistory: number;
     showMouseEvents: boolean;
@@ -44,18 +44,18 @@ interface KeyEventState {
 
 interface KeyEventActions {
     // ───────────── setters ─────────────
-    setDragThreshold(value: number): void;
-    setFilterHotkeys(value: boolean): void;
-    setIgnoreModifiers(modifiers: string[]): void;
-    setShowEventHistory(value: boolean): void;
-    setMaxHistory(value: number): void;
-    setShowMouseEvents(value: boolean): void;
-    setLingerDurationMs(value: number): void;
-    setToggleShortcut(value: string[]): void;
+    setDragThreshold(value: KeyEventState["dragThreshold"]): void;
+    setFilter(value: KeyEventState["filter"]): void;
+    setAllowedKeys(keys: KeyEventState["allowedKeys"]): void;
+    setShowEventHistory(value: KeyEventState["showEventHistory"]): void;
+    setMaxHistory(value: KeyEventState["maxHistory"]): void;
+    setShowMouseEvents(value: KeyEventState["showMouseEvents"]): void;
+    setLingerDurationMs(value: KeyEventState["lingerDurationMs"]): void;
+    setToggleShortcut(value: KeyEventState["toggleShortcut"]): void;
     // ───────────── event actions ─────────────
     onEvent(event: EventPayload): void;
     onKeyPress(event: RawKeyEvent): void;
-    isHotkey(event: RawKeyEvent, pressedKeys: string[]): boolean;
+    ignoreEvent(event: RawKeyEvent, pressedKeys: string[]): boolean;
     onKeyRelease(event: RawKeyEvent): void;
     onMouseMove(event: MouseMoveEvent): void;
     onMouseButtonPress(event: MouseButtonEvent): void;
@@ -77,8 +77,12 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
         settingsOpen: false,
         showMouseClicked: false,
         dragThreshold: 50,
-        filterHotkeys: true,
-        ignoreModifiers: [RawKey.ShiftLeft, RawKey.ShiftRight],
+        filter: "modifiers",
+        allowedKeys: [
+            RawKey.ControlLeft,
+            RawKey.MetaLeft,
+            RawKey.Alt
+        ],
         showEventHistory: false,
         maxHistory: 5,
         lingerDurationMs: 5_000,
@@ -88,11 +92,11 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
         setDragThreshold(value: number) {
             set({ dragThreshold: value });
         },
-        setFilterHotkeys(value: boolean) {
-            set({ filterHotkeys: value });
+        setFilter(value: "none" | "modifiers" | "custom") {
+            set({ filter: value });
         },
-        setIgnoreModifiers(modifiers: string[]) {
-            set({ ignoreModifiers: modifiers });
+        setAllowedKeys(keys: string[]) {
+            set({ allowedKeys: keys });
         },
         setShowEventHistory(value: boolean) {
             set({ showEventHistory: value });
@@ -113,7 +117,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
             const state = get();
             switch (event.type) {
                 case "KeyEvent":
-                    if (!AllowedKeys.has(event.name)) return;
+                    if (!MappedKeys.has(event.name)) return;
                     if (event.pressed) {
                         state.onKeyPress(event);
                     } else {
@@ -145,7 +149,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
             pressedKeys.push(event.name);
 
             // 1. filter event
-            if (state.filterHotkeys && !state.isHotkey(event, pressedKeys)) {
+            if (state.filter !== "none" && state.ignoreEvent(event, pressedKeys)) {
                 set({ pressedKeys });
                 return;
             }
@@ -213,15 +217,19 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
 
             set({ pressedKeys, groups });
         },
-        isHotkey(event, pressedKeys) {
+        ignoreEvent(event, pressedKeys) {
             const state = get();
-            if (pressedKeys.length === 1) {
-                // only modifier keys
-                return MODIFIERS.has(event.name) && !state.ignoreModifiers.includes(event.name);
-            } else {
-                // combination starts with modifier
-                return MODIFIERS.has(pressedKeys[0]) && !state.ignoreModifiers.includes(pressedKeys[0]);
+            if (state.filter === "modifiers") {
+                return pressedKeys.length === 1
+                    ? !MODIFIERS.has(event.name) // single non-modifier
+                    : !MODIFIERS.has(pressedKeys[0]); // combination not starting with modifier
             }
+            else if (state.filter === "custom") {
+                return pressedKeys.length === 1
+                    ? !state.allowedKeys.includes(event.name)
+                    : !state.allowedKeys.includes(pressedKeys[0]);
+            }
+            return false;
         },
         onKeyRelease(event: RawKeyEvent) {
             const state = get();
@@ -356,7 +364,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
             ) {
                 set({ showMouseClicked: false, lastMouseButtonPressAt: undefined });
             }
-            
+
             // handle scroll linger
             if (state.mouse.lastScrollAt && now - state.mouse.lastScrollAt > SCROLL_LINGER_MS) {
                 // simulate scroll key release

@@ -28,7 +28,7 @@ export const MinimalKeycap = ({ event, isPressed }: KeycapProps) => {
     if (event.isModifier() && layout.showIcon && display.icon) {
         const Icon = display.icon;
         if (modifier.textVariant === "icon" || event.isArrow()) {
-            child = <Icon color={color} size={text.size * 0.8} />;
+            child = <Icon color={color} size={text.size} />;
         } else {
             child = <>
                 <Icon color={color} size={text.size} />
@@ -43,7 +43,7 @@ export const MinimalKeycap = ({ event, isPressed }: KeycapProps) => {
         <motion.div
             animate={{ scale: isPressed ? 0.95 : 1 }}
             transition={{ ease: easeInOutExpo, duration: 0.1 }}
-            className="flex items-center"
+            className="flex items-center h-full"
             style={textStyle}
         >
             {child}
