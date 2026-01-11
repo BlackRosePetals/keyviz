@@ -19,21 +19,18 @@ export const MinimalKeycap = ({ event, isPressed }: KeycapProps) => {
         gap: ".1em",
     };
 
-    const label = modifier.textVariant === "text-short"
-        ? display.shortLabel ?? display.label
-        : display.label;
-
+    const label = display?.shortLabel ?? display.label;
     let child = <>{label}</>;
 
     if (event.isModifier() && layout.showIcon && display.icon) {
         const Icon = display.icon;
-        if (modifier.textVariant === "icon" || event.isArrow()) {
+        if (text.variant === "icon" || event.isArrow()) {
             child = <Icon color={color} size={text.size} />;
         } else {
             child = <>
                 <Icon color={color} size={text.size} />
                 <div style={{ ...textStyle }}>
-                    {label}
+                    {text.variant === "text" ? display.label : label}
                 </div>
             </>;
         }

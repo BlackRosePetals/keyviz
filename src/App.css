@@ -80,6 +80,9 @@
   --sidebar-ring: oklch(0.708 0 0);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+
+  --highlight-color: #fff;
+  --shadow-color: oklch(80% 0 0);
 }
 
 .dark {
@@ -114,6 +117,9 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  
+  --highlight-color: #666;
+  --shadow-color: #000;
 }
 
 @layer base {

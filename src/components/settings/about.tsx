@@ -55,9 +55,6 @@ export const AboutPage = () => {
                     <ItemTitle>
                         <HugeiconsIcon icon={StarsIcon} size="1em" /> Check for updates
                     </ItemTitle>
-                    <ItemDescription className="max-w-100">
-                        GitHub releases page to check for the latest version.
-                    </ItemDescription>
                 </ItemContent>
                 <ItemActions>
                     {
@@ -74,7 +71,7 @@ export const AboutPage = () => {
                         <HugeiconsIcon icon={GithubIcon} size="1em" /> Open Source
                     </ItemTitle>
                     <ItemDescription className="max-w-100">
-                        Review the source code on GitHub, start the project, or contribute to its development.
+                        Review the source code on GitHub, star the project, or contribute to its development.
                     </ItemDescription>
                 </ItemContent>
                 <ItemActions>

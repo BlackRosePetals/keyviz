@@ -21,16 +21,12 @@ export const PlasticKeycap = ({ event, isPressed }: KeycapProps) => {
                 position: "relative",
                 height: text.size * 2.75,
                 minWidth: text.size * 2.75,
-
                 width: "100%",
-                outlineStyle: "solid",
-                outlineWidth: border.enabled ? border.width : 0,
-                outlineColor: borderColor,
                 borderRadius: border.radius * (text.size * 1.25),
-
                 background: color.useGradient
-                    ? `linear-gradient(to bottom right, ${secondaryBgColor}, oklch(from ${secondaryBgColor} clamp(0, calc(l - 0.2), 1) c h))`
-                    : secondaryBgColor,
+                ? `linear-gradient(to bottom right, ${secondaryBgColor}, oklch(from ${secondaryBgColor} clamp(0, calc(l - 0.2), 1) c h))`
+                : secondaryBgColor,
+                boxShadow: `0 0 0 ${border.enabled ? border.width : 0}px ${borderColor}`,
             }}
         >
             <motion.div
@@ -53,6 +49,8 @@ export const PlasticKeycap = ({ event, isPressed }: KeycapProps) => {
                     background: color.useGradient
                         ? `linear-gradient(to right, oklch(from ${bgColor} clamp(0, calc(l - 0.1), 1) c h), ${bgColor})`
                         : bgColor,
+
+                    boxShadow: color.useGradient ? '' : `0 0 0 ${border.enabled ? border.width : 0}px ${borderColor}`,
                 }}
             >
                 <KeycapBase event={event} />

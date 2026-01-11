@@ -17,7 +17,7 @@ export const KeycapBase = ({ event }: { event: KeyEvent }) => {
     textTransform: text.caps,
   };
 
-  const label = modifier.textVariant === "text-short"
+  const label = text.variant === "text-short"
     ? display.shortLabel ?? display.label
     : display.label;
 
@@ -26,7 +26,7 @@ export const KeycapBase = ({ event }: { event: KeyEvent }) => {
   // ───────────── With Icon ─────────────
   if (layout.showIcon && display.icon) {
     const Icon = display.icon;
-    if (modifier.textVariant === "icon" || event.isArrow()) {
+    if (text.variant === "icon" || event.isArrow()) {
       return <div 
         className="w-full h-full flex"
         style={{ alignItems: flexAlignment.alignItems, justifyContent: flexAlignment.justifyContent }}

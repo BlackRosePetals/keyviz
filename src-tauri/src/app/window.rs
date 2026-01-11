@@ -27,7 +27,7 @@ pub fn config_window(window: &tauri::WebviewWindow) {
         }
 
         use cocoa::appkit::{NSWindow, NSWindowCollectionBehavior};
-        use cocoa::base::{id, nil};
+        use cocoa::base::{id};
 
         unsafe {
             let ns_window = window.ns_window().unwrap() as id;

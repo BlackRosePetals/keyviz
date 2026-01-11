@@ -39,13 +39,10 @@ export const ElevatedKeycap = ({ event, isPressed }: KeycapProps) => {
 
                     borderStyle: "solid",
                     borderWidth: border.enabled ? border.width : 0,
-                    borderColor: color.useGradient ? "transparent" : borderColor,
+                    borderColor: borderColor,
                     borderRadius: border.radius * (text.size * 1.25),
 
-                    background: color.useGradient
-                        ? `linear-gradient(oklch(from ${bgColor} clamp(0, calc(l + 0.2), 1) c h), ${bgColor}) padding-box, 
-                           linear-gradient(oklch(from ${borderColor} clamp(0, calc(l + 0.4), 1) c h), oklch(from ${borderColor} clamp(0, calc(l + 0.2), 1) c h), ${borderColor}) border-box`
-                        : bgColor,
+                    background: bgColor,
                 }}
             >
                 <KeycapBase event={event} />
@@ -62,9 +59,7 @@ export const ElevatedKeycap = ({ event, isPressed }: KeycapProps) => {
                     borderColor: borderColor,
                     borderRadius: border.radius * (text.size * 1.25),
 
-                    background: color.useGradient
-                        ? `linear-gradient(oklch(from ${secondaryColor} clamp(0, calc(l - 0.2), 1) c h) 70%, ${secondaryColor} 100%)`
-                        : secondaryColor,
+                    background: secondaryColor,
                 }}
             />
         </div>

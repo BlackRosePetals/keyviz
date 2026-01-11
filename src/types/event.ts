@@ -178,7 +178,8 @@ export const RawKey = {
   Middle: "Middle",
   Right: "Right",
   Drag: "Drag",
-  Scroll: "Scroll",
+  ScrollUp: "ScrollUp",
+  ScrollDown: "ScrollDown",
 } as const;
 
 export type RawKeyValue = typeof RawKey[keyof typeof RawKey];

@@ -9,6 +9,7 @@ import { MouseIndicator } from "./mouse-indicator";
 export const MouseOverlay = () => {
     const monitorName = useKeyStyle(state => state.appearance.monitor);
 
+    const wheel = useKeyEvent(state => state.mouse.wheel);
     const isPressed = useKeyEvent(state => state.showMouseClicked);
 
     const style = useKeyStyle(state => state.mouse);
@@ -95,7 +96,7 @@ export const MouseOverlay = () => {
                 {style.showIndicator &&
                     <motion.div
                         className="absolute left-1/2 top-1/2"
-                        animate={{ opacity: isVisible ? 1 : 0 }}
+                        animate={{ opacity: isVisible || wheel !== 0 ? 1 : 0 }}
                         transition={{ duration: 0.2 }}
                     >
                         <MouseIndicator />

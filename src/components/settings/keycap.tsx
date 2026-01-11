@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useKeyStyle } from "@/stores/key_style";
+import { KeyStyleState, useKeyStyle } from "@/stores/key_style";
 import { AlignHorizontalCenterIcon, AlignLeftIcon, AlignRightIcon, Download01Icon, PaintBoardIcon, Refresh01Icon, Upload01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
@@ -135,10 +135,11 @@ export const KeycapSettings = () => {
 
     const onStyleChange = (value: string) => {
         if (value === "minimal") {
-            setModifierStyle({ highlight: false, textVariant: "icon" });
+            setTextStyle({ variant: "icon" });
+            setModifierStyle({ highlight: false });
             setLayoutStyle({ showIcon: true });
         }
-        setAppearance({ style: value as any });
+        setAppearance({ style: value as KeyStyleState["appearance"]["style"] });
     }
 
     const randomizeStyle = () => {
@@ -161,7 +162,6 @@ export const KeycapSettings = () => {
                 secondaryColor: modScheme.secondary,
                 borderColor: modScheme.secondary,
                 textColor: modScheme.text,
-                textVariant: Math.random() > 0.5 ? "text-short" : "text",
             });
         } else if (background.enabled) {
             setBackgroundStyle({ color: scheme.text });
@@ -254,11 +254,11 @@ export const KeycapSettings = () => {
                         </Item>
                         <Item variant="muted" className="flex-2">
                             <ItemContent>
-                                <ItemTitle>Modifier Text</ItemTitle>
+                                <ItemTitle>Variant</ItemTitle>
                             </ItemContent>
                             <ItemActions>
-                                <Select value={modifier.textVariant} onValueChange={(value) => {
-                                    setModifierStyle({ textVariant: value as any });
+                                <Select value={text.variant} onValueChange={(value) => {
+                                    setTextStyle({ variant: value as KeyStyleState["text"]["variant"] });
                                     if (value === "icon") {
                                         setLayoutStyle({ showIcon: true });
                                     }
@@ -267,8 +267,8 @@ export const KeycapSettings = () => {
                                         <SelectValue placeholder="text variant" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="text-short">Short Text</SelectItem>
                                         <SelectItem value="text">Full Text</SelectItem>
+                                        <SelectItem value="text-short">Short Text</SelectItem>
                                         <SelectItem value="icon">Icon Only</SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -282,7 +282,7 @@ export const KeycapSettings = () => {
                             <ItemActions>
                                 <ToggleGroup
                                     type="single"
-                                    value={text.caps} onValueChange={(value) => setTextStyle({ caps: value as 'uppercase' | 'capitalize' | 'lowercase' })}
+                                    value={text.caps} onValueChange={(value) => setTextStyle({ caps: value as KeyStyleState["text"]["caps"] })}
                                     variant="outline"
                                     className="w-28"
                                 >
@@ -332,7 +332,7 @@ export const KeycapSettings = () => {
                             <Switch
                                 checked={layout.showIcon}
                                 onCheckedChange={(showIcon) => setLayoutStyle({ showIcon })}
-                                disabled={modifier.textVariant === "icon"}
+                                disabled={text.variant === "icon"}
                             />
                         </ItemActions>
                     </Item>
@@ -344,7 +344,7 @@ export const KeycapSettings = () => {
                             <ToggleGroup
                                 type="single"
                                 value={layout.iconAlignment}
-                                onValueChange={(value) => setLayoutStyle({ iconAlignment: value as "flex-start" | "flex-end" | "center" })}
+                                onValueChange={(value) => setLayoutStyle({ iconAlignment: value as KeyStyleState["layout"]["iconAlignment"] })}
                                 variant="outline"
                                 className="w-28"
                                 disabled={!layout.showIcon}
@@ -391,7 +391,7 @@ export const KeycapSettings = () => {
                         <Switch checked={modifier.highlight} onCheckedChange={(highlight) => setModifierStyle({ highlight })} />
                     </ItemActions>
                 </Item>
-                <Item variant="muted">
+                {appearance.style !== "elevated" && <Item variant="muted">
                     <ItemContent>
                         <ItemTitle>Gradient</ItemTitle>
                     </ItemContent>
@@ -401,7 +401,7 @@ export const KeycapSettings = () => {
                             onCheckedChange={(useGradient) => setColorStyle({ useGradient })}
                         />
                     </ItemActions>
-                </Item>
+                </Item>}
                 {
                     (appearance.style === "minimal" || appearance.style === "flat") ?
                         <ItemGrid>
@@ -410,7 +410,7 @@ export const KeycapSettings = () => {
                                     <ItemTitle>Normal</ItemTitle>
                                 </ItemContent>
                                 <ItemActions>
-                                    <ColorInput value={color.color} onChange={(color) => setColorStyle({ color: color as string })} />
+                                    <ColorInput value={color.color} onChange={(color) => setColorStyle({ color })} />
                                 </ItemActions>
                             </Item>
                             {
@@ -420,7 +420,7 @@ export const KeycapSettings = () => {
                                         <ItemTitle>Modifier</ItemTitle>
                                     </ItemContent>
                                     <ItemActions>
-                                        <ColorInput value={modifier.color} onChange={(color) => setModifierStyle({ color: color as string })} />
+                                        <ColorInput value={modifier.color} onChange={(color) => setModifierStyle({ color })} />
                                     </ItemActions>
                                 </Item>
                             }
@@ -521,7 +521,7 @@ export const KeycapSettings = () => {
                         <ItemActions>
                             <ColorInput
                                 value={border.color}
-                                onChange={(color) => setBorderStyle({ color: color as string })}
+                                onChange={(color) => setBorderStyle({ color })}
                                 disabled={!border.enabled}
                             />
                         </ItemActions>
@@ -534,7 +534,7 @@ export const KeycapSettings = () => {
                             <ItemActions>
                                 <ColorInput
                                     value={modifier.borderColor}
-                                    onChange={(color) => setModifierStyle({ borderColor: color as string })}
+                                    onChange={(color) => setModifierStyle({ borderColor: color })}
                                     disabled={!border.enabled}
                                 />
                             </ItemActions>
@@ -580,7 +580,7 @@ export const KeycapSettings = () => {
                             <ItemTitle>Color</ItemTitle>
                         </ItemContent>
                         <ItemActions>
-                            <ColorInput value={background.color} onChange={(color) => setBackgroundStyle({ color: color as string })} disabled={!background.enabled} />
+                            <ColorInput value={background.color} onChange={(color) => setBackgroundStyle({ color })} disabled={!background.enabled} />
                         </ItemActions>
                     </Item>
                 </ItemGrid>

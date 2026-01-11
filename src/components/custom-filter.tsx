@@ -1,4 +1,5 @@
 import { keymaps } from "@/lib/keymaps";
+import { cn } from "@/lib/utils";
 import { useKeyEvent } from "@/stores/key_event";
 import { RawKey } from "@/types/event";
 import { useState, useEffect, createContext, useContext, useRef } from "react";
@@ -86,23 +87,17 @@ const ButtonKey: React.FC<{
       onClick={handleClick}
       onMouseEnter={() => setHoveredKey(rawKey)}
       onMouseLeave={() => setHoveredKey(undefined)}
-      className={`
-        text-primary bg-secondary 
-        rounded-lg
-        text-xs 
-        flex items-center justify-center text-center
-        hover:outline-2 hover:outline-blue-500 transition-all
-        cursor-pointer
-        ${className}
-        ${flexGrow ? '' : 'w-10'} 
-        ${!enabled && 'opacity-50'}
-        ${isHighlighted && 'outline-2 outline-blue-500'}
-        h-10
-      `}
+      className={cn(
+        'h-10 flex items-center justify-center text-xs text-primary text-center bg-secondary rounded-lg cursor-pointer',
+        className,
+        !flexGrow && 'w-10',
+        !enabled && 'opacity-50',
+        isHighlighted ? 'outline-2 outline-blue-500' : 'hover:outline-2 hover:outline-blue-500'
+      )}
       style={{
         boxShadow: enabled
-          ? '0 1px 2px 1px #000, inset 0 1px 1px 0 #666'
-          : '0 1px 1px 1px #000',
+          ? '0 1px 2px 0 var(--shadow-color), inset 0 1px 1px 0 var(--highlight-color)'
+          : '0 1px 2px 0 var(--shadow-color) inset',
       }}
     >
       {content}

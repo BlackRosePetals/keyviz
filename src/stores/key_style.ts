@@ -37,7 +37,6 @@ export interface ModifierSettings {
     color: string;
     secondaryColor: string;
     textColor: string;
-    textVariant: "icon" | "text" | "text-short";
     borderColor: string;
 }
 
@@ -45,6 +44,7 @@ export interface TextSettings {
     size: number;
     color: string;
     caps: "uppercase" | "capitalize" | "lowercase";
+    variant: "icon" | "text" | "text-short";
     alignment: Alignment;
 }
 
@@ -104,11 +104,11 @@ const createKeyStyleStore = createSyncedStore<KeyStyleStore>(
             monitor: null,
             flexDirection: "column",
             alignment: "bottom-center",
-            marginX: 0,
-            marginY: 150,
+            marginX: 100,
+            marginY: 100,
             animation: "fade",
             animationDuration: 0.25,
-            style: "plastic",
+            style: "elevated",
         },
         layout: {
             showIcon: true,
@@ -116,28 +116,28 @@ const createKeyStyleStore = createSyncedStore<KeyStyleStore>(
             iconAlignment: "flex-end",
         },
         color: {
-            color: "#404040",
-            secondaryColor: "#2e2e2e",
+            color: "#ffffff",
+            secondaryColor: "#1a1a1a",
             useGradient: true,
         },
         modifier: {
             highlight: false,
-            color: "#606060",
-            secondaryColor: "#4b4b4b",
-            textColor: "#f8f8f8",
-            textVariant: "text-short",
-            borderColor: "#000000ff",
+            color: "#3a86ff",
+            secondaryColor: "#000000",
+            textColor: "#000000",
+            borderColor: "#000000",
         },
         text: {
             size: 32,
-            color: "#ffffff",
+            color: "#000000",
             caps: "capitalize",
-            alignment: "bottom-center",
+            variant: "text-short",
+            alignment: "center",
         },
         border: {
             enabled: true,
             width: 2,
-            color: "#000000ff",
+            color: "#1a1a1a",
             radius: 0.5,
         },
         background: {
@@ -147,7 +147,7 @@ const createKeyStyleStore = createSyncedStore<KeyStyleStore>(
         mouse: {
             showClicks: false,
             size: 150,
-            color: "#90d5ff",
+            color: "#3A86FF",
             keepHighlight: true,
             showIndicator: true,
             indicatorSize: 50,
