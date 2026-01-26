@@ -31,7 +31,7 @@ export function Visualization() {
       // ───────────── listener toggle ─────────────
       listen<boolean>("listening-toggle", (event) => setIsListening(event.payload)),
     ];
-    const id = setInterval(tick, 150);
+    const id = setInterval(tick, 250);
 
     return () => {
       clearInterval(id);
@@ -52,7 +52,7 @@ export function Visualization() {
     set_monitor();
   }, [monitor]);
 
-  if (!isListening) return;
+  if (!isListening) return null;
 
   return <div className="w-screen h-screen relative overflow-hidden">
     <MouseOverlay />

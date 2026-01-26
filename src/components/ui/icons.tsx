@@ -1,5 +1,4 @@
 import type { LucideProps } from "lucide-react";
-import path from "path/win32";
 import { forwardRef, type ReactNode } from "react";
 
 // Factory function to create custom icons

@@ -16,5 +16,13 @@
                 "visible": false
             }
         ]
+    },
+    "bundle": {
+        "windows": {
+            "wix": {
+                "dialogImagePath": "./wix/dialog-image.png",
+                "bannerPath": "./wix/banner.png"
+            }
+        }
     }
 }

@@ -1,8 +1,8 @@
 import { keymaps } from "@/lib/keymaps";
-import { useKeyStyle } from "@/stores/key_style";
-import type { KeycapProps } from ".";
 import { easeInOutExpo } from "@/lib/utils";
+import { useKeyStyle } from "@/stores/key_style";
 import { motion } from "motion/react";
+import type { KeycapProps } from ".";
 
 export const MinimalKeycap = ({ event, isPressed }: KeycapProps) => {
     const text = useKeyStyle((state) => state.text);

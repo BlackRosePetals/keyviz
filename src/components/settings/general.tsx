@@ -1,16 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import { Item, ItemActions, ItemContent, ItemDescription, ItemHeader, ItemTitle } from "@/components/ui/item";
-import { NumberInput } from '@/components/ui/number-input';
 import { ShortcutRecorder } from '@/components/shortcut-recorder';
-import { Switch } from "@/components/ui/switch";
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { cn } from "@/lib/utils";
-import { useKeyEvent } from "@/stores/key_event";
-import { useKeyStyle } from "@/stores/key_style";
-import { ArrowHorizontalIcon, ArrowVerticalIcon, FilterHorizontalIcon, FilterIcon, LayerIcon, ToggleOnIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 import {
     Drawer,
     DrawerContent,
@@ -18,7 +9,16 @@ import {
     DrawerHeader,
     DrawerTitle,
     DrawerTrigger,
-} from "@/components/ui/drawer"
+} from "@/components/ui/drawer";
+import { Item, ItemActions, ItemContent, ItemDescription, ItemHeader, ItemTitle } from "@/components/ui/item";
+import { NumberInput } from '@/components/ui/number-input';
+import { Switch } from "@/components/ui/switch";
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { cn } from "@/lib/utils";
+import { KeyEventState, useKeyEvent } from "@/stores/key_event";
+import { KeyStyleState, useKeyStyle } from "@/stores/key_style";
+import { ArrowHorizontalIcon, ArrowVerticalIcon, FilterHorizontalIcon, FilterIcon, LayerIcon, ToggleOnIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { CustomFilter } from '../custom-filter';
 
 
@@ -73,7 +73,7 @@ export const GeneralSettings = () => {
                     type="single"
                     variant="outline"
                     value={filter}
-                    onValueChange={(value) => setFilter(value as 'none' | 'modifiers' | 'custom')}
+                    onValueChange={(value) => setFilter(value as KeyEventState["filter"])}
                 >
                     <ToggleGroupItem value="none" aria-label="No Filter">Off</ToggleGroupItem>
                     <ToggleGroupItem value="modifiers" aria-label="Modifiers Only">Hotkeys</ToggleGroupItem>
@@ -85,8 +85,7 @@ export const GeneralSettings = () => {
         <Item variant="muted">
             <ItemContent>
                 <ItemTitle>
-                    <HugeiconsIcon icon={LayerIcon} size="1em" />
-                    Show History
+                    <HugeiconsIcon icon={LayerIcon} size="1em" /> History
                 </ItemTitle>
                 <ItemDescription>
                     Keep previously pressed keystrokes in the view
@@ -108,7 +107,7 @@ export const GeneralSettings = () => {
                         type="single"
                         variant="outline"
                         value={direction}
-                        onValueChange={(value) => setAppearance({ flexDirection: value as 'row' | 'column' })}
+                        onValueChange={(value) => setAppearance({ flexDirection: value as KeyStyleState["appearance"]["flexDirection"] })}
                     >
                         <ToggleGroupItem value="row" aria-label="Horizontal">
                             <HugeiconsIcon icon={ArrowHorizontalIcon} strokeWidth={2} size={10} /> Row
@@ -132,8 +131,7 @@ export const GeneralSettings = () => {
         <Item variant="muted">
             <ItemHeader className="flex-col items-start">
                 <ItemTitle>
-                    <HugeiconsIcon icon={ToggleOnIcon} size="1em" />
-                    Toggle Shortcut
+                    <HugeiconsIcon icon={ToggleOnIcon} size="1em" /> Toggle Shortcut
                 </ItemTitle>
                 <ItemDescription>
                     Global shortcut to show/hide the key visualizer, click box to set

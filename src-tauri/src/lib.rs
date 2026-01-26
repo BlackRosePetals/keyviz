@@ -17,6 +17,8 @@ use app::window::config_window;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|_, __, ___| {}))
+        .plugin(tauri_plugin_prevent_default::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::new().build())
@@ -59,7 +61,7 @@ pub fn run() {
                         }
                         let webview_url = tauri::WebviewUrl::App("index.html#/settings".into());
                         WebviewWindowBuilder::new(app, "settings", webview_url.clone())
-                            .title("Settings")
+                            .title("Keyviz")
                             .inner_size(800.0, 640.0)
                             .min_inner_size(640.0, 480.0)
                             .max_inner_size(1000.0, 800.0)

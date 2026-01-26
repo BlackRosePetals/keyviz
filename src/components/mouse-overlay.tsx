@@ -1,41 +1,63 @@
 import { easeInOutExpo } from "@/lib/utils";
 import { useKeyEvent } from "@/stores/key_event";
 import { useKeyStyle } from "@/stores/key_style";
-import { availableMonitors, currentMonitor, Monitor } from "@tauri-apps/api/window";
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { MouseIndicator } from "./mouse-indicator";
 
+const MIN_CLICK_DISPLAY_MS = 200;
+
 export const MouseOverlay = () => {
-    const monitorName = useKeyStyle(state => state.appearance.monitor);
-
     const wheel = useKeyEvent(state => state.mouse.wheel);
-    const isPressed = useKeyEvent(state => state.showMouseClicked);
-
+    const pressedMouseButton = useKeyEvent(state => state.pressedMouseButton);
     const style = useKeyStyle(state => state.mouse);
     const animationDuration = useKeyStyle(state => state.appearance.animationDuration);
 
-    const [monitor, setMonitor] = useState<Monitor | null>(null);
-    const positionRef = useRef<HTMLDivElement>(null);
+    const [show, setShow] = useState(false);
 
+    const positionRef = useRef<HTMLDivElement>(null);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const pressTimestampRef = useRef<number | null>(null);
+
+    // Handle minimum display duration for mouse clicks
     useEffect(() => {
-        const load = async () => {
-            const monitors = await availableMonitors();
-            let targetMonitor: Monitor | null = null;
-            if (monitorName) {
-                targetMonitor = monitors.find(m => m.name === monitorName) || null;
+        if (pressedMouseButton) {
+            // Mouse button pressed - show immediately and record timestamp
+            setShow(true);
+            pressTimestampRef.current = Date.now();
+            // Clear any pending timeout
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
             }
-            if (!targetMonitor) {
-                targetMonitor = await currentMonitor();
+        } else if (show && pressTimestampRef.current) {
+            // Mouse button released - check if minimum duration has passed
+            const elapsed = Date.now() - pressTimestampRef.current;
+            
+            if (elapsed >= MIN_CLICK_DISPLAY_MS) {
+                // Already displayed long enough - hide immediately
+                setShow(false);
+                pressTimestampRef.current = null;
+            } else {
+                // Need to maintain visibility for remaining time
+                timeoutRef.current = setTimeout(() => {
+                    setShow(false);
+                    pressTimestampRef.current = null;
+                    timeoutRef.current = null;
+                }, MIN_CLICK_DISPLAY_MS - elapsed);
             }
-            setMonitor(targetMonitor);
         }
-        load();
-    }, [monitorName]);
+
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        };
+    }, [pressedMouseButton, show]);
 
     // Subscribe to mouse movement without re-rendering React
     useEffect(() => {
-        if (!monitor || !positionRef.current) return;
+        if (!positionRef.current) return;
 
         // Zustand subscribe allows us to listen to changes without triggering a component re-render
         const unsubscribe = useKeyEvent.subscribe((state) => {
@@ -52,15 +74,13 @@ export const MouseOverlay = () => {
         });
 
         return () => unsubscribe();
-    }, [monitor, style.showClicks, style.keepHighlight, style.showIndicator]);
-
-    if (!monitor) return null;
+    }, [style.showClicks, style.keepHighlight, style.showIndicator]);
 
     // Logic to determine if we should render anything at all to keep DOM light
     const shouldRender = style.showClicks || style.keepHighlight || style.showIndicator;
     if (!shouldRender) return null;
 
-    const isVisible = isPressed || style.keepHighlight;
+    const isVisible = show || style.keepHighlight;
 
     return (
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
@@ -78,7 +98,7 @@ export const MouseOverlay = () => {
                         initial={false}
                         animate={{
                             opacity: isVisible ? 1 : 0,
-                            scale: isPressed ? 0.5 : 1.0,
+                            scale: show ? 0.5 : 1.0,
                             borderWidth: style.size / 20,
                         }}
                         style={{

@@ -1,14 +1,16 @@
+import { easeInOutExpo } from "@/lib/utils";
 import { useKeyStyle } from "@/stores/key_style";
 import { motion } from "motion/react";
 import type { KeycapProps } from ".";
 import { KeycapBase } from "./base";
-import { easeInOutExpo } from "@/lib/utils";
+import { PressCount } from "./press-count";
 
-export const ElevatedKeycap = ({ event, isPressed }: KeycapProps) => {
+export const LowProfileKeycap = ({ event, isPressed, lastest }: KeycapProps) => {
     const color = useKeyStyle((state) => state.color);
     const text = useKeyStyle((state) => state.text);
     const border = useKeyStyle((state) => state.border);
     const modifier = useKeyStyle((state) => state.modifier);
+    const showPressCount = useKeyStyle((state) => state.layout.showPressCount);
 
     const bgColor = event.isModifier() && modifier.highlight ? modifier.color : color.color;
     const secondaryColor = event.isModifier() && modifier.highlight ? modifier.secondaryColor : color.secondaryColor;
@@ -20,9 +22,10 @@ export const ElevatedKeycap = ({ event, isPressed }: KeycapProps) => {
             style={{
                 position: "relative",
                 height: text.size * 2.5,
-                minWidth: text.size * 2.25,
+                minWidth: text.size * (event.isModifier() ? 2.5 : 2.25),
             }}
         >
+            {(lastest && showPressCount && event.pressedCount > 1) && <PressCount count={event.pressedCount} />}
             <motion.div
                 animate={{ y: isPressed ? text.size * 0.25 : 0 }}
                 transition={{ ease: easeInOutExpo, duration: 0.1 }}

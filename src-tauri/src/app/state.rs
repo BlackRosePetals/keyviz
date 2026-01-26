@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use tauri::{Emitter, Wry, image::Image, include_image};
+use tauri::{image::Image, include_image, Emitter, Wry};
 use tauri_plugin_store::StoreExt;
 
 #[derive(Default)]
@@ -67,14 +67,14 @@ impl AppState {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct KeyEventStore {
+struct KeyEventStore {
     pub state: KeyEventState,
     // pub version: u32,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct KeyEventState {
+struct KeyEventState {
     // pub drag_threshold: u32,
     // pub filter_hotkeys: bool,
     // pub ignore_modifiers: Vec<String>,

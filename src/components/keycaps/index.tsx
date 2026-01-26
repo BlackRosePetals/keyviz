@@ -1,20 +1,21 @@
 import { useKeyStyle } from "@/stores/key_style";
 import { KeyEvent } from "@/types/event";
-import { ElevatedKeycap } from "./elevated";
-import { FlatKeycap } from "./flat";
+import { LowProfileKeycap } from "./lowprofile";
+import { LaptopKeycap } from "./laptop";
 import { MinimalKeycap } from "./minimal";
-import { PlasticKeycap } from "./plastic";
+import { PBTKeycap } from "./pbt";
 
 export interface KeycapProps {
     event: KeyEvent;
     isPressed: boolean;
+    lastest: boolean;
 }
 
 const components = {
     minimal: MinimalKeycap,
-    flat: FlatKeycap,
-    elevated: ElevatedKeycap,
-    plastic: PlasticKeycap,
+    laptop: LaptopKeycap,
+    lowprofile: LowProfileKeycap,
+    pbt: PBTKeycap,
 } as const;
 
 export const Keycap = (props: KeycapProps) => {

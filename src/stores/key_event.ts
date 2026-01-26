@@ -1,24 +1,22 @@
-import { MappedKeys, EventPayload, KeyEvent, MODIFIERS, MouseButton, MouseButtonEvent, MouseMoveEvent, MouseWheelEvent, RawKey, RawKeyEvent } from "@/types/event";
+import { EventPayload, KeyEvent, MappedKeys, MODIFIERS, MouseButton, MouseButtonEvent, MouseMoveEvent, MouseWheelEvent, RawKey, RawKeyEvent } from "@/types/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { tauriStorage } from "./storage";
 import { createSyncedStore } from "./sync";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 
 
 export const KEY_EVENT_STORE = "key_event_store";
 const SCROLL_LINGER_MS = 300;
-const MIN_CLICK_DISPLAY_MS = 200;
 
 interface KeyGroup {
     keys: KeyEvent[];
-    timestamp: number;
+    createdAt: number;
 }
 
-interface KeyEventState {
+export interface KeyEventState {
     // ───────────── physical state ─────────────
     pressedKeys: string[];
     pressedMouseButton: MouseButton | null;
-    lastMouseButtonPressAt?: number;
     mouse: {
         x: number;
         y: number;
@@ -30,7 +28,6 @@ interface KeyEventState {
     // ───────────── visual state ─────────────
     settingsOpen: boolean;
     groups: KeyGroup[];
-    showMouseClicked: boolean;
     // ───────────── config ─────────────
     dragThreshold: number;
     filter: "none" | "modifiers" | "custom";
@@ -75,7 +72,6 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
         groups: <KeyGroup[]>[],
         listening: true,
         settingsOpen: false,
-        showMouseClicked: false,
         dragThreshold: 50,
         filter: "modifiers",
         allowedKeys: [
@@ -144,7 +140,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
         },
         onKeyPress(event: RawKeyEvent) {
             const state = get();
-            // 0. track pyhsical state
+            // 0. track physical state
             const pressedKeys = [...state.pressedKeys];
             pressedKeys.push(event.name);
 
@@ -169,7 +165,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
                             groupKeys.push(new KeyEvent(gKey.name));
                         }
                     });
-                    groups.push({ keys: groupKeys, timestamp: Date.now() });
+                    groups.push({ keys: groupKeys, createdAt: state.showEventHistory ? Date.now() : 0 });
                 }
                 // replace mode, only currently pressed keys
                 // or
@@ -190,12 +186,13 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
             }
             // 3. add to group
             else {
+                const createdAt = state.showEventHistory ? Date.now() : 0;
                 // add new group
                 if (pressedKeys.length === 1 || last < 0) {
                     if (state.showEventHistory) {
-                        groups.push({ keys: [key], timestamp: Date.now() });
+                        groups.push({ keys: [key], createdAt });
                     } else {
-                        groups = [{ keys: [key], timestamp: Date.now() }];
+                        groups = [{ keys: [key], createdAt }];
                     }
                 }
                 // key combination
@@ -204,7 +201,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
                         // history mode, partial combination, add new group
                         const groupKeys = groups[last].keys.filter(gKey => gKey.in(pressedKeys));
                         groupKeys.push(key);
-                        groups.push({ keys: groupKeys, timestamp: Date.now() });
+                        groups.push({ keys: groupKeys, createdAt });
                     } else {
                         groups[last].keys.push(key);
                     }
@@ -297,8 +294,6 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
 
             set({
                 pressedMouseButton: event.button,
-                lastMouseButtonPressAt: Date.now(),
-                showMouseClicked: true,
                 mouse
             });
         },
@@ -318,17 +313,8 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
                 // simulate mouse button release as key
                 state.onKeyRelease({ type: "KeyEvent", name: event.button.toString(), pressed: false });
             }
-            // hide click visualization after short delay
-            let showMouseClicked = true;
-            let lastMouseButtonPressAt = state.lastMouseButtonPressAt;
-            if (Date.now() - state.lastMouseButtonPressAt! > MIN_CLICK_DISPLAY_MS) {
-                showMouseClicked = false;
-                lastMouseButtonPressAt = undefined;
-            }// else, will be turned off in tick()
             set({
                 pressedMouseButton: null,
-                lastMouseButtonPressAt,
-                showMouseClicked,
                 mouse
             });
         },
@@ -357,15 +343,6 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
 
             const groups = <KeyGroup[]>[];
 
-            // hide mouse click visualization after delay
-            if (
-                !state.pressedMouseButton
-                && state.lastMouseButtonPressAt
-                && now - state.lastMouseButtonPressAt > MIN_CLICK_DISPLAY_MS
-            ) {
-                set({ showMouseClicked: false, lastMouseButtonPressAt: undefined });
-            }
-
             // handle scroll linger
             if (state.mouse.lastScrollAt && now - state.mouse.lastScrollAt > SCROLL_LINGER_MS) {
                 // simulate scroll key release
@@ -391,7 +368,7 @@ const createKeyEventStore = createSyncedStore<KeyEventStore>(
                     notify = true;
                 }
                 if (updatedKeys.length > 0) {
-                    groups.push({ keys: updatedKeys, timestamp: group.timestamp });
+                    groups.push({ keys: updatedKeys, createdAt: group.createdAt });
                 }
             }
 

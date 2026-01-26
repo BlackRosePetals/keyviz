@@ -17,12 +17,13 @@ export interface AppearanceSettings {
     marginY: number;
     animation: "none" | "fade" | "zoom" | "float" | "slide";
     animationDuration: number;
-    style: "minimal" | "flat" | "elevated" | "plastic";
+    style: "minimal" | "laptop" | "lowprofile" | "pbt";
 }
 
 export interface LayoutSettings {
     showIcon: boolean;
     showSymbol: boolean;
+    showPressCount: boolean;
     iconAlignment: "flex-start" | "center" | "flex-end";
 }
 
@@ -108,11 +109,12 @@ const createKeyStyleStore = createSyncedStore<KeyStyleStore>(
             marginY: 100,
             animation: "fade",
             animationDuration: 0.25,
-            style: "elevated",
+            style: "lowprofile",
         },
         layout: {
             showIcon: true,
             showSymbol: true,
+            showPressCount: true,
             iconAlignment: "flex-end",
         },
         color: {
@@ -147,7 +149,7 @@ const createKeyStyleStore = createSyncedStore<KeyStyleStore>(
         mouse: {
             showClicks: false,
             size: 150,
-            color: "#3A86FF",
+            color: "#009dff",
             keepHighlight: true,
             showIndicator: true,
             indicatorSize: 50,

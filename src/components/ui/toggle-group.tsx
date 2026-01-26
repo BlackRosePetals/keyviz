@@ -25,13 +25,31 @@ function ToggleGroup({
   size,
   spacing = 0,
   orientation = "horizontal",
+  preventDeselection = true,
+  onValueChange,
   children,
   ...props
 }: React.ComponentProps<typeof ToggleGroupPrimitive.Root> &
   VariantProps<typeof toggleVariants> & {
     spacing?: number
     orientation?: "horizontal" | "vertical"
+    preventDeselection?: boolean
   }) {
+  const handleValueChange = React.useCallback(
+    (value: string | string[]) => {
+      if (preventDeselection) {
+        if (typeof value === "string" && !value) {
+          return
+        }
+        if (Array.isArray(value) && value.length === 0) {
+          return
+        }
+      }
+      onValueChange?.(value as any)
+    },
+    [preventDeselection, onValueChange]
+  )
+
   return (
     <ToggleGroupPrimitive.Root
       data-slot="toggle-group"
@@ -44,6 +62,7 @@ function ToggleGroup({
         "rounded-lg data-[size=sm]:rounded-[min(var(--radius-md),10px)] group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-stretch",
         className
       )}
+      onValueChange={handleValueChange as any}
       {...props}
     >
       <ToggleGroupContext.Provider

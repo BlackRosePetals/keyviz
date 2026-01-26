@@ -76,17 +76,18 @@ export const KeyOverlay = () => {
     if (appearance.animation === "none") {
         return (
             <div className="w-full h-full flex" style={containerStyle}>
-                {groups.map((group) => (
+                {groups.map((group, groupIndex) => (
                     <div
-                        key={group.timestamp}
+                        key={group.createdAt}
                         style={groupStyle}
                         className={background.enabled ? "overflow-hidden" : ""}
                     >
-                        {group.keys.map(event => (
+                        {group.keys.map((event, keyIndex) => (
                             <Keycap
                                 key={event.name}
                                 event={event}
-                                isPressed={groups[groups.length - 1] === group && event.in(pressedKeys)}
+                                lastest={group.keys.length - 1 === keyIndex}
+                                isPressed={groups.length - 1 === groupIndex && event.in(pressedKeys)}
                             />
                         ))}
                     </div>
@@ -98,9 +99,9 @@ export const KeyOverlay = () => {
     return (
         <div className="w-full h-full flex" style={containerStyle}>
             <AnimatePresence>
-                {groups.map((group, index) => (
+                {groups.map((group, groupIndex) => (
                     <motion.div
-                        key={group.timestamp}
+                        key={group.createdAt}
                         layout={showHistory ? "position" : false}
                         variants={fadeVariants}
                         initial="hidden"
@@ -113,8 +114,8 @@ export const KeyOverlay = () => {
                             duration: showHistory ? appearance.animationDuration : 0
                         }}
                     >
-                        <AnimatePresence >
-                            {group.keys.map(event => (
+                        <AnimatePresence>
+                            {group.keys.map((event, keyIndex) => (
                                 <motion.div
                                     key={event.name}
                                     layout="position"
@@ -130,7 +131,8 @@ export const KeyOverlay = () => {
                                 >
                                     <Keycap
                                         event={event}
-                                        isPressed={groups.length - 1 === index && event.in(pressedKeys)}
+                                        lastest={group.keys.length - 1 === keyIndex}
+                                        isPressed={groups.length - 1 === groupIndex && event.in(pressedKeys)}
                                     />
                                 </motion.div>
                             ))}

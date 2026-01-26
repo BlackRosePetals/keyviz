@@ -180,10 +180,10 @@ export const KeycapSettings = () => {
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>
-                            <SelectItem value="minimal" >Minimal</SelectItem>
-                            <SelectItem value="flat"    >Flat</SelectItem>
-                            <SelectItem value="elevated">Elevated</SelectItem>
-                            <SelectItem value="plastic" >Plastic</SelectItem>
+                            <SelectItem value="minimal">Minimal</SelectItem>
+                            <SelectItem value="laptop">Laptop</SelectItem>
+                            <SelectItem value="lowprofile">Lowprofile</SelectItem>
+                            <SelectItem value="pbt" >PBT</SelectItem>
                         </SelectGroup>
                     </SelectContent>
                 </Select>
@@ -374,116 +374,137 @@ export const KeycapSettings = () => {
                         />
                     </ItemActions>
                 </Item>
-            </CollapsibleContent>
-        </Collapsible>
-
-        <Collapsible>
-            <CollapsibleTrigger>
-                <h2 className="text-sm text-muted-foreground font-medium">Container</h2>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="flex flex-col gap-y-4 pt-4">
-                <Item variant="muted">
-                    <ItemContent>
-                        <ItemTitle>Highlight Modifier</ItemTitle>
-                        <ItemDescription>Use different color for modifier keys</ItemDescription>
-                    </ItemContent>
-                    <ItemActions>
-                        <Switch checked={modifier.highlight} onCheckedChange={(highlight) => setModifierStyle({ highlight })} />
-                    </ItemActions>
-                </Item>
-                {appearance.style !== "elevated" && <Item variant="muted">
-                    <ItemContent>
-                        <ItemTitle>Gradient</ItemTitle>
-                    </ItemContent>
-                    <ItemActions>
-                        <Switch
-                            checked={color.useGradient}
-                            onCheckedChange={(useGradient) => setColorStyle({ useGradient })}
-                        />
-                    </ItemActions>
-                </Item>}
                 {
-                    (appearance.style === "minimal" || appearance.style === "flat") ?
-                        <ItemGrid>
-                            <Item variant="muted" className={modifier.highlight ? "" : "col-span-2"}>
-                                <ItemContent>
-                                    <ItemTitle>Normal</ItemTitle>
-                                </ItemContent>
-                                <ItemActions>
-                                    <ColorInput value={color.color} onChange={(color) => setColorStyle({ color })} />
-                                </ItemActions>
-                            </Item>
-                            {
-                                modifier.highlight &&
-                                <Item variant="muted">
-                                    <ItemContent>
-                                        <ItemTitle>Modifier</ItemTitle>
-                                    </ItemContent>
-                                    <ItemActions>
-                                        <ColorInput value={modifier.color} onChange={(color) => setModifierStyle({ color })} />
-                                    </ItemActions>
-                                </Item>
-                            }
-                        </ItemGrid> :
-                        <>
-                            {modifier.highlight && <h1>Normal Color</h1>}
-                            <ItemGrid>
-                                <Item variant="muted">
-                                    <ItemContent>
-                                        <ItemTitle>Primary</ItemTitle>
-                                    </ItemContent>
-                                    <ItemActions>
-                                        <ColorInput
-                                            value={color.color}
-                                            onChange={(color) => setColorStyle({ color })}
-                                        />
-                                    </ItemActions>
-                                </Item>
-                                <Item variant="muted">
-                                    <ItemContent>
-                                        <ItemTitle>Secondary</ItemTitle>
-                                    </ItemContent>
-                                    <ItemActions>
-                                        <ColorInput
-                                            value={color.secondaryColor}
-                                            onChange={(secondaryColor) => setColorStyle({ secondaryColor })}
-                                        />
-                                    </ItemActions>
-                                </Item>
-                            </ItemGrid>
-                            {
-                                modifier.highlight && <>
-                                    <h1>Modifier Color</h1>
-                                    <ItemGrid>
-                                        <Item variant="muted">
-                                            <ItemContent>
-                                                <ItemTitle>Primary</ItemTitle>
-                                            </ItemContent>
-                                            <ItemActions>
-                                                <ColorInput
-                                                    value={modifier.color}
-                                                    onChange={(color) => setModifierStyle({ color })}
-                                                />
-                                            </ItemActions>
-                                        </Item>
-                                        <Item variant="muted">
-                                            <ItemContent>
-                                                <ItemTitle>Secondary</ItemTitle>
-                                            </ItemContent>
-                                            <ItemActions>
-                                                <ColorInput
-                                                    value={modifier.secondaryColor}
-                                                    onChange={(secondaryColor) => setModifierStyle({ secondaryColor })}
-                                                />
-                                            </ItemActions>
-                                        </Item>
-                                    </ItemGrid>
-                                </>
-                            }
-                        </>
+                    appearance.style !== "minimal" &&
+                    <Item variant="muted">
+                        <ItemContent>
+                            <ItemTitle>Press Count</ItemTitle>
+                            <ItemDescription>Display the number of times a key has been pressed.</ItemDescription>
+                        </ItemContent>
+                        <ItemActions>
+                            <Switch
+                                checked={layout.showPressCount}
+                                onCheckedChange={(showPressCount) => setLayoutStyle({ showPressCount })}
+                            />
+                        </ItemActions>
+                    </Item>
                 }
             </CollapsibleContent>
         </Collapsible>
+
+        {
+            appearance.style !== "minimal" &&
+            <Collapsible>
+                <CollapsibleTrigger>
+                    <h2 className="text-sm text-muted-foreground font-medium">Color</h2>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="flex flex-col gap-y-4 pt-4">
+                    <Item variant="muted">
+                        <ItemContent>
+                            <ItemTitle>Highlight Modifier</ItemTitle>
+                            <ItemDescription>Use different color for modifier keys</ItemDescription>
+                        </ItemContent>
+                        <ItemActions>
+                            <Switch checked={modifier.highlight} onCheckedChange={(highlight) => setModifierStyle({ highlight })} />
+                        </ItemActions>
+                    </Item>
+                    {
+                        appearance.style !== "lowprofile" &&
+                        <Item variant="muted">
+                            <ItemContent>
+                                <ItemTitle>Gradient</ItemTitle>
+                            </ItemContent>
+                            <ItemActions>
+                                <Switch
+                                    checked={color.useGradient}
+                                    onCheckedChange={(useGradient) => setColorStyle({ useGradient })}
+                                />
+                            </ItemActions>
+                        </Item>
+                    }
+                    {
+                        (appearance.style === "laptop") ?
+                            <ItemGrid>
+                                <Item variant="muted" className={modifier.highlight ? "" : "col-span-2"}>
+                                    <ItemContent>
+                                        <ItemTitle>Normal</ItemTitle>
+                                    </ItemContent>
+                                    <ItemActions>
+                                        <ColorInput value={color.color} onChange={(color) => setColorStyle({ color })} />
+                                    </ItemActions>
+                                </Item>
+                                {
+                                    modifier.highlight &&
+                                    <Item variant="muted">
+                                        <ItemContent>
+                                            <ItemTitle>Modifier</ItemTitle>
+                                        </ItemContent>
+                                        <ItemActions>
+                                            <ColorInput value={modifier.color} onChange={(color) => setModifierStyle({ color })} />
+                                        </ItemActions>
+                                    </Item>
+                                }
+                            </ItemGrid> :
+                            <>
+                                {modifier.highlight && <h1>Normal Color</h1>}
+                                <ItemGrid>
+                                    <Item variant="muted">
+                                        <ItemContent>
+                                            <ItemTitle>Primary</ItemTitle>
+                                        </ItemContent>
+                                        <ItemActions>
+                                            <ColorInput
+                                                value={color.color}
+                                                onChange={(color) => setColorStyle({ color })}
+                                            />
+                                        </ItemActions>
+                                    </Item>
+                                    <Item variant="muted">
+                                        <ItemContent>
+                                            <ItemTitle>Secondary</ItemTitle>
+                                        </ItemContent>
+                                        <ItemActions>
+                                            <ColorInput
+                                                value={color.secondaryColor}
+                                                onChange={(secondaryColor) => setColorStyle({ secondaryColor })}
+                                            />
+                                        </ItemActions>
+                                    </Item>
+                                </ItemGrid>
+                                {
+                                    modifier.highlight && <>
+                                        <h1>Modifier Color</h1>
+                                        <ItemGrid>
+                                            <Item variant="muted">
+                                                <ItemContent>
+                                                    <ItemTitle>Primary</ItemTitle>
+                                                </ItemContent>
+                                                <ItemActions>
+                                                    <ColorInput
+                                                        value={modifier.color}
+                                                        onChange={(color) => setModifierStyle({ color })}
+                                                    />
+                                                </ItemActions>
+                                            </Item>
+                                            <Item variant="muted">
+                                                <ItemContent>
+                                                    <ItemTitle>Secondary</ItemTitle>
+                                                </ItemContent>
+                                                <ItemActions>
+                                                    <ColorInput
+                                                        value={modifier.secondaryColor}
+                                                        onChange={(secondaryColor) => setModifierStyle({ secondaryColor })}
+                                                    />
+                                                </ItemActions>
+                                            </Item>
+                                        </ItemGrid>
+                                    </>
+                                }
+                            </>
+                    }
+                </CollapsibleContent>
+            </Collapsible>
+        }
 
         <Collapsible>
             <CollapsibleTrigger>
