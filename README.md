@@ -1,13 +1,18 @@
 # [Keyviz](https://keyviz.org)
 
-<img src="https://img.shields.io/github/v/release/mulaRahul/keyviz?style=flat-square" alt="Releases">
-<img src="https://img.shields.io/github/downloads/mulaRahul/keyviz/total?style=flat-square" alt="Downloads">
-<img src="https://img.shields.io/github/stars/mulaRahul/keyviz?style=flat-square" alt="Stars">
-<img src="https://img.shields.io/github/license/mulaRahul/keyviz?style=flat-square" alt="License">
-<img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey?style=flat-square" alt="Platform Support">
+<div>
+   <img src="https://img.shields.io/github/v/release/mulaRahul/keyviz?style=flat-square" alt="Releases">
+   <img src="https://img.shields.io/github/downloads/mulaRahul/keyviz/total?style=flat-square" alt="Downloads">
+   <img src="https://img.shields.io/github/stars/mulaRahul/keyviz?style=flat-square" alt="Stars">
+   <img src="https://img.shields.io/github/license/mulaRahul/keyviz?style=flat-square" alt="License">
+   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey?style=flat-square" alt="Platform Support">
+</div>
 
 Keyviz is a **free and open-source** tool that visualizes your keypresses and mouse actions in real-time. Let your audience know what handy shortcuts you're pressing during tutorials, presentations, collaborations, or whenever you need.
 
+Support the launch on product hunt!
+
+<a href="https://www.producthunt.com/products/keyviz-2?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-keyviz-2" target="_blank" rel="noopener noreferrer"><img alt="Keyviz - A free, open-source keypress and mouse visualizer | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1068241&amp;theme=light&amp;t=1769510424282"></a>
 
 ## ⌨️ Keypress & 🖱️ Mouse Actions
 Along with normal keys, can also visualize mouse actions like <kbd>Cmd</kbd> + <kbd>Click</kbd>, <kbd>Alt</kbd> + <kbd>Drag</kbd>, etc.
